@@ -1,4 +1,4 @@
-# Insert chapter 2 title here
+# Regression and model validation
 
 *Describe the work you have done this week and summarize your learning.*
 
@@ -6,8 +6,107 @@
 - Assume the reader has an introductory course level understanding of writing and reading R code as well as statistical methods.
 - Assume the reader has no previous knowledge of your data or the more advanced methods you are using.
 
+data source: [http://www.helsinki.fi/~kvehkala/JYTmooc/JYTOPKYS3-data.txt](http://www.helsinki.fi/~kvehkala/JYTmooc/JYTOPKYS3-data.txt) 
+
 ```{r}
 date()
 ```
 
 Here we go again...
+
+### Step 1
+
+Reading the learning2014 data (named as lrndata) into from your local folder. By exploring the structure and the dimensions of the data, we can see that it has 166 rows, in other words 166 observations, and 7 columns, in other words 7 variables. Data consists of variables that contain information about students' age (in years) (variable age), attitudes toward statistics (variable attitude), exam points (variable points), gender (variable gender), and their learning approaches: deep learning (variable deep), strategic learning (variable stra) and surface learning (variable surf). 
+
+
+```{r}
+setwd("~/Git/IODS-project/data")
+lrndata <- read.table("lrndata.csv")
+str(lrndata)
+head(lrndata)
+
+```
+
+### Step 2 
+
+Below is a graphical overview of the data which shows (1) scatterplots of each variable pair visualized on left side, (2) variable distributions on the diagonal and (3) Pearson correlation value and significance displayed on the right side of the plot. The colours of the overview represent the values of the gender variable (females and males).
+
+The distributions of the variables tell us that there are more females than males in the dataset and the age distribution is skewed towards the left which means there are more younger students than older students.Also, males give higher values for the attitudes toward statistics than females, otherwise the variable distributions resemble each other for males and females and are relatively standard. 
+
+The attitude toward statistics correlates significantly positively with the students' exam points and significantly negatively with males' surface learning orientation. Deep learning correlates significantly negatively with males' surface learning approach and strategic learning correlates significantly negatively with surface learning approach. Other variables do not correlate with each other significantly and the correlations between them are relatively weak. 
+
+Scatterplots display the relationship between two variables and each dot represents an observation. The variables that correlate with each other significantly, it is possible to detect some patterns of observations such as in the scatterplot between variables points and attitude. It is also possible to detect some outlier observations such as in the scatterplot between variables deep and surf.  
+
+
+```{r}
+library(GGally)
+library(ggplot2)
+
+plot1 <- ggpairs(lrndata, mapping = aes(col = gender, alpha = 0.3), lower = list(combo = wrap("facethist", bins = 20)))
+plot1
+```
+
+
+Below you can see summaries of variables in the data. For the numeric variables it shows the minimum, maximum, median, mean and cutpoint values for first quartile (25%) and third Quartile (75%). Further inspecting gender variable, we can see there are 110 females and 56 males in the data.  
+
+
+```{r}
+summary(lrndata)
+table (lrndata$gender)
+```
+
+
+### Step 3
+Choose three variables as explanatory variables and fit a regression model where exam points is the target (dependent) variable. Show a summary of the fitted model and comment and interpret the results. Explain and interpret the statistical test related to the model parameters. If an explanatory variable in your model does not have a statistically significant relationship with the target variable, remove the variable from the model and fit the model again without it. (0-4 points)
+
+```{r}
+# fit a linear model
+model1 <- lm(points ~ attitude + stra + gender, data = lrndata)
+
+# print out a summary of the model
+summary(model1)
+
+# fit a linear model
+model2 <- lm(points ~ attitude, data = lrndata)
+
+# print out a summary of the model
+summary(model2)
+
+```
+
+
+### Step 4
+Using a summary of your fitted model, explain the relationship between the chosen explanatory variables and the target variable (interpret the model parameters). Explain and interpret the multiple R squared of the model. (0-3 points)
+
+The results in Table 3.2 show that
+there is no evidence of any linear relationship between pulse rate and height.
+The multiple R-squared, which in this example with a single explanatory
+variable is simply the square of the correlation coefficient between pulse rate
+and height, is 0.0476, so that less than 5% of the variation in pulse rate is
+explained by the variation in height.
+
+The square of the multiple correlation coefficient is 0.638; the three explanatory variables together account
+for about 64% of the variation in time spent looking after the car
+
+
+```{r}
+summary(model2)
+```
+
+
+### Step 5 
+I produced the following diagnostic plots for the model 2: Residuals vs Fitted values, Normal QQ-plot and Residuals vs Leverage. With these plots it is possible to check the assumptions of linear regression models: (1) the errors are normally distributed, (2) the errors are not correlated, (3) the errors have constant variance, and (4) the size of a given error does not depend on the explanatory variables.
+
+To check the constant variance of errors, we look at the residuals vs Fitted values plot, which is scatter plot of residuals and  model predictions. There are no patterns in the scatter plot so we can say that the model errors have constant variance.
+ 
+To check the normality of the errors we look at the QQ-plot of the residuals. The residuals seem to fall onto the line quite well which means that the errors of the model fit to the normality assumption. 
+
+To check that the size of a given error is not dependent on the explanatory variables, we look at the residuals vs leverage plot which measures the impact of a single observation on the model. We can see that any of the observations is not specifically pulling the regression line upwards or downwards. We can say that none of the observations has an unusually high impact on the size of the given errors. 
+
+
+```{r}
+par(mfrow = c(2,2))
+plot(model2, which = c(1,2,5))
+```
+
+

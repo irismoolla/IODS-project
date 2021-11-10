@@ -1,0 +1,2 @@
+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
+git config --global user.email "your.mail@uni.fi" 
