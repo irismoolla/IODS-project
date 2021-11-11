@@ -1,14 +1,13 @@
 
 
-# Regression and model validation
+## Regression and model validation
 
-*Describe the work you have done this week and summarize your learning.*
 
-- Describe your work and results clearly. 
-- Assume the reader has an introductory course level understanding of writing and reading R code as well as statistical methods.
-- Assume the reader has no previous knowledge of your data or the more advanced methods you are using.
+This week I learned new techniques of data wrangling and visualizing data before the data analysis itself. I liked especially the function ggpairs from the ggplot2 package. With the data that I prepared for the analysis, I performed and interpreted regression analysis with multiple variables. All the R codes, interpretations and explanations of the analysis exercises are found below. 
+
 
 data source: [http://www.helsinki.fi/~kvehkala/JYTmooc/JYTOPKYS3-data.txt](http://www.helsinki.fi/~kvehkala/JYTmooc/JYTOPKYS3-data.txt) 
+
 
 ```{r}
 date()
@@ -60,7 +59,15 @@ table (lrndata$gender)
 
 
 ### Step 3
-Choose three variables as explanatory variables and fit a regression model where exam points is the target (dependent) variable. Show a summary of the fitted model and comment and interpret the results. Explain and interpret the statistical test related to the model parameters. If an explanatory variable in your model does not have a statistically significant relationship with the target variable, remove the variable from the model and fit the model again without it. (0-4 points)
+
+For the regression model, I use students' attitudes toward statistics, strategic learning approach and gender to explain students' exam points. Below you can the summaries of two fitted models; model 1 with all three explanatory variables and model 2 only with the explanatory variable (attitude toward statistics) that has a statistically significant relationship with the target variable. The other two explanatory variables,  strategic learning approach and gender, did not have a statistically significant relationship with exam points, and they were removed from the model and the model 2 was fitted again without them. 
+
+The regression model 1 consists of a set of three explanatory variables. The model output gives a summary of the model residuals which correspond to the prediction errors of the model. The coefficient part shows the estimates of the parameters in the model. The estimates tell us that the effect of attitudes on exam points is 0.35 with a standard error of 0.06. The parameter estimate tells us that a one unit-unit change in the attitude variable produces a 0.35-unit increase in exam points when all the other explanatory variables is being held constant. The t value corresponds to a statistical test of a null hypothesis so it tests the significance of the coefficient. T value is obtained by dividing the regression parameter estimate by its standard error. P value for the attitude variable is highly significant so we can conclude that there is a statistical relationship between exam points and attitudes toward statistics. 
+
+Same interpretation goes with the stra variable: its parameter estimate tells us that a one unit-unit change in the stra variable produces a 0.89-unit increase in exam points when all the other explanatory variables is being held constant. The P value for the stra variable is not significant so we cannot say anything certain about the statistical relationship between exam points and strategic learning approach.
+
+The coefficient of gender indicates that males have -0.22 lower exam points than females when other explanatory variables are controlled. Also, the P value for the gender variable is not significant so there is no evidence of the statistical relationship between exam points and gender. 
+
 
 ```{r}
 # fit a linear model
@@ -79,25 +86,16 @@ summary(model2)
 
 
 ### Step 4
+
 Using a summary of your fitted model, explain the relationship between the chosen explanatory variables and the target variable (interpret the model parameters). Explain and interpret the multiple R squared of the model. (0-3 points)
 
-The results in Table 3.2 show that
-there is no evidence of any linear relationship between pulse rate and height.
-The multiple R-squared, which in this example with a single explanatory
-variable is simply the square of the correlation coefficient between pulse rate
-and height, is 0.0476, so that less than 5% of the variation in pulse rate is
-explained by the variation in height.
+The summary of the model 2 tell us that the effect of attitudes on exam points is 0.35 with a standard error of 0.06 and we can see there is no change in the parameters between models 1 and 2. Again, a one unit-unit change in the attitude variable produces a 0.35-unit increase in exam points. P value for the attitude variable is highly significant, p < 0.000. 
 
-The square of the multiple correlation coefficient is 0.638; the three explanatory variables together account
-for about 64% of the variation in time spent looking after the car
-
-
-```{r}
-summary(model2)
-```
+The multiple R squared of the model tells us how well the model fits the data. It tells us that variation in attitudes explains 19.1% of the variance in exam points (multiple R-squared gets a value 0.1906). With only one explanatory variable, the multiple R-squared is the square of the correlation coefficient between exam points and attitudes. 
 
 
 ### Step 5 
+
 I produced the following diagnostic plots for the model 2: Residuals vs Fitted values, Normal QQ-plot and Residuals vs Leverage. With these plots it is possible to check the assumptions of linear regression models: (1) the errors are normally distributed, (2) the errors are not correlated, (3) the errors have constant variance, and (4) the size of a given error does not depend on the explanatory variables.
 
 To check the constant variance of errors, we look at the residuals vs Fitted values plot, which is scatter plot of residuals and  model predictions. There are no patterns in the scatter plot so we can say that the model errors have constant variance.
