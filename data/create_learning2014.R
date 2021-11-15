@@ -5,12 +5,12 @@
 
 learning2014 <- read.table("http://www.helsinki.fi/~kvehkala/JYTmooc/JYTOPKYS3-data.txt", sep="\t", header=TRUE)
 
-#explore the structure and dimensions of the data. Write short code comments describing the output of these explorations.
+#exploring the structure and dimensions of the data
 
 str(learning2014)
 dim(learning2014)
 
-#Data frame, learning2014,  has 183 rows (observations) and 60 columns (variables). Most variables are integers and one is a character.
+#Short description of the data: Data frame, learning2014,  has 183 rows (observations) and 60 columns (variables). Most variables are integers and one is a character.
 
 
 library(dplyr)
@@ -58,13 +58,15 @@ lrndata <- filter(lrndata, points > 0)
 str(lrndata)
 
 #setting the working directory
-setwd("~/Git/IODS-project/data")
+setwd("~/Git/IODS-project")
 
 #saving the new dataset
-write.table(lrndata, file = "lrndata.csv")
+write.table(lrndata, file = "C:\Users\irisp\Documents\Git\IODS-project\data\lrndata.csv")
 
 #reading the saved data             
-read.table("lrndata.csv")
+lrndata <- read.table("C:\Users\irisp\Documents\Git\IODS-project\data\lrndata.csv")
+
+#checking the saved data
 str(lrndata)
 head(lrndata)
 
