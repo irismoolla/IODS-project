@@ -18,12 +18,12 @@ Here we go again...
 
 ### Step 1
 
-Reading the learning2014 data (named as lrndata) into from your local folder. By exploring the structure and the dimensions of the data, we can see that it has 166 rows, in other words 166 observations, and 7 columns, in other words 7 variables. Data consists of variables that contain information about students' age (in years) (variable age), attitudes toward statistics (variable attitude), exam points (variable points), gender (variable gender), and their learning approaches: deep learning (variable deep), strategic learning (variable stra) and surface learning (variable surf). 
+Reading the learning2014 data (named as lrndata) into from my local folder. By exploring the structure and the dimensions of the data, we can see that it has 166 rows, in other words 166 observations, and 7 columns, in other words 7 variables. Data consists of variables that contain information about students' age (in years) (variable age), attitudes toward statistics (variable attitude), exam points (variable points), gender (variable gender), and their learning approaches: deep learning (variable deep), strategic learning (variable stra) and surface learning (variable surf). 
 
 
 ```{r}
-setwd("~/Git/IODS-project/data")
-lrndata <- read.table("lrndata.csv")
+setwd("~/Git/IODS-project")
+lrndata <- read.table ("C:/Users/irisp/Documents/Git/IODS-project/data/lrndata.csv")
 str(lrndata)
 head(lrndata)
 

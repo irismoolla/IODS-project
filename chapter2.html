@@ -167,23 +167,18 @@ pre code {
 </div>
 
 
-<div id="regression-and-model-validation" class="section level1">
-<h1>Regression and model validation</h1>
-<p><em>Describe the work you have done this week and summarize your learning.</em></p>
-<ul>
-<li>Describe your work and results clearly.</li>
-<li>Assume the reader has an introductory course level understanding of writing and reading R code as well as statistical methods.</li>
-<li>Assume the reader has no previous knowledge of your data or the more advanced methods you are using.</li>
-</ul>
+<div id="regression-and-model-validation" class="section level2">
+<h2>Regression and model validation</h2>
+<p>This week I learned new techniques of data wrangling and visualizing data before the data analysis itself. I liked especially the function ggpairs from the ggplot2 package. With the data that I prepared for the analysis, I performed and interpreted regression analysis with multiple variables. All the R codes, interpretations and explanations of the analysis exercises are found below.</p>
 <p>data source: <a href="http://www.helsinki.fi/~kvehkala/JYTmooc/JYTOPKYS3-data.txt">http://www.helsinki.fi/~kvehkala/JYTmooc/JYTOPKYS3-data.txt</a></p>
 <pre class="r"><code>date()</code></pre>
-<pre><code>## [1] &quot;Wed Nov 10 18:29:19 2021&quot;</code></pre>
+<pre><code>## [1] &quot;Mon Nov 15 13:41:51 2021&quot;</code></pre>
 <p>Here we go again…</p>
 <div id="step-1" class="section level3">
 <h3>Step 1</h3>
 <p>Reading the learning2014 data (named as lrndata) into from your local folder. By exploring the structure and the dimensions of the data, we can see that it has 166 rows, in other words 166 observations, and 7 columns, in other words 7 variables. Data consists of variables that contain information about students’ age (in years) (variable age), attitudes toward statistics (variable attitude), exam points (variable points), gender (variable gender), and their learning approaches: deep learning (variable deep), strategic learning (variable stra) and surface learning (variable surf).</p>
-<pre class="r"><code>setwd(&quot;~/Git/IODS-project/data&quot;)
-lrndata &lt;- read.table(&quot;lrndata.csv&quot;)
+<pre class="r"><code>setwd(&quot;~/Git/IODS-project&quot;)
+lrndata &lt;- read.table (&quot;C:/Users/irisp/Documents/Git/IODS-project/data/lrndata.csv&quot;)
 str(lrndata)</code></pre>
 <pre><code>## &#39;data.frame&#39;:    166 obs. of  7 variables:
 ##  $ gender  : chr  &quot;F&quot; &quot;M&quot; &quot;F&quot; &quot;M&quot; ...
@@ -241,7 +236,10 @@ plot1</code></pre>
 </div>
 <div id="step-3" class="section level3">
 <h3>Step 3</h3>
-<p>Choose three variables as explanatory variables and fit a regression model where exam points is the target (dependent) variable. Show a summary of the fitted model and comment and interpret the results. Explain and interpret the statistical test related to the model parameters. If an explanatory variable in your model does not have a statistically significant relationship with the target variable, remove the variable from the model and fit the model again without it. (0-4 points)</p>
+<p>For the regression model, I use students’ attitudes toward statistics, strategic learning approach and gender to explain students’ exam points. Below you can the summaries of two fitted models; model 1 with all three explanatory variables and model 2 only with the explanatory variable (attitude toward statistics) that has a statistically significant relationship with the target variable. The other two explanatory variables, strategic learning approach and gender, did not have a statistically significant relationship with exam points, and they were removed from the model and the model 2 was fitted again without them.</p>
+<p>The regression model 1 consists of a set of three explanatory variables. The model output gives a summary of the model residuals which correspond to the prediction errors of the model. The coefficient part shows the estimates of the parameters in the model. The estimates tell us that the effect of attitudes on exam points is 0.35 with a standard error of 0.06. The parameter estimate tells us that a one unit-unit change in the attitude variable produces a 0.35-unit increase in exam points when all the other explanatory variables is being held constant. The t value corresponds to a statistical test of a null hypothesis so it tests the significance of the coefficient. T value is obtained by dividing the regression parameter estimate by its standard error. P value for the attitude variable is highly significant so we can conclude that there is a statistical relationship between exam points and attitudes toward statistics.</p>
+<p>Same interpretation goes with the stra variable: its parameter estimate tells us that a one unit-unit change in the stra variable produces a 0.89-unit increase in exam points when all the other explanatory variables is being held constant. The P value for the stra variable is not significant so we cannot say anything certain about the statistical relationship between exam points and strategic learning approach.</p>
+<p>The coefficient of gender indicates that males have -0.22 lower exam points than females when other explanatory variables are controlled. Also, the P value for the gender variable is not significant so there is no evidence of the statistical relationship between exam points and gender.</p>
 <pre class="r"><code># fit a linear model
 model1 &lt;- lm(points ~ attitude + stra + gender, data = lrndata)
 
@@ -294,27 +292,8 @@ summary(model2)</code></pre>
 <div id="step-4" class="section level3">
 <h3>Step 4</h3>
 <p>Using a summary of your fitted model, explain the relationship between the chosen explanatory variables and the target variable (interpret the model parameters). Explain and interpret the multiple R squared of the model. (0-3 points)</p>
-<p>The results in Table 3.2 show that there is no evidence of any linear relationship between pulse rate and height. The multiple R-squared, which in this example with a single explanatory variable is simply the square of the correlation coefficient between pulse rate and height, is 0.0476, so that less than 5% of the variation in pulse rate is explained by the variation in height.</p>
-<p>The square of the multiple correlation coefficient is 0.638; the three explanatory variables together account for about 64% of the variation in time spent looking after the car</p>
-<pre class="r"><code>summary(model2)</code></pre>
-<pre><code>## 
-## Call:
-## lm(formula = points ~ attitude, data = lrndata)
-## 
-## Residuals:
-##      Min       1Q   Median       3Q      Max 
-## -16.9763  -3.2119   0.4339   4.1534  10.6645 
-## 
-## Coefficients:
-##             Estimate Std. Error t value Pr(&gt;|t|)    
-## (Intercept) 11.63715    1.83035   6.358 1.95e-09 ***
-## attitude     0.35255    0.05674   6.214 4.12e-09 ***
-## ---
-## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
-## 
-## Residual standard error: 5.32 on 164 degrees of freedom
-## Multiple R-squared:  0.1906, Adjusted R-squared:  0.1856 
-## F-statistic: 38.61 on 1 and 164 DF,  p-value: 4.119e-09</code></pre>
+<p>The summary of the model 2 tell us that the effect of attitudes on exam points is 0.35 with a standard error of 0.06 and we can see there is no change in the parameters between models 1 and 2. Again, a one unit-unit change in the attitude variable produces a 0.35-unit increase in exam points. P value for the attitude variable is highly significant, p &lt; 0.000.</p>
+<p>The multiple R squared of the model tells us how well the model fits the data. It tells us that variation in attitudes explains 19.1% of the variance in exam points (multiple R-squared gets a value 0.1906). With only one explanatory variable, the multiple R-squared is the square of the correlation coefficient between exam points and attitudes.</p>
 </div>
 <div id="step-5" class="section level3">
 <h3>Step 5</h3>

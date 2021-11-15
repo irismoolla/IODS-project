@@ -189,7 +189,7 @@ pre code {
 <pre class="r"><code># This is a so-called &quot;R chunk&quot; where you can write R code.
 
 date()</code></pre>
-<pre><code>## [1] &quot;Thu Nov 11 16:24:09 2021&quot;</code></pre>
+<pre><code>## [1] &quot;Mon Nov 15 13:43:34 2021&quot;</code></pre>
 <hr />
 </div>
 <div id="regression-and-model-validation" class="section level2">
@@ -197,13 +197,13 @@ date()</code></pre>
 <p>This week I learned new techniques of data wrangling and visualizing data before the data analysis itself. I liked especially the function ggpairs from the ggplot2 package. With the data that I prepared for the analysis, I performed and interpreted regression analysis with multiple variables. All the R codes, interpretations and explanations of the analysis exercises are found below.</p>
 <p>data source: <a href="http://www.helsinki.fi/~kvehkala/JYTmooc/JYTOPKYS3-data.txt">http://www.helsinki.fi/~kvehkala/JYTmooc/JYTOPKYS3-data.txt</a></p>
 <pre class="r"><code>date()</code></pre>
-<pre><code>## [1] &quot;Thu Nov 11 16:24:09 2021&quot;</code></pre>
+<pre><code>## [1] &quot;Mon Nov 15 13:43:34 2021&quot;</code></pre>
 <p>Here we go again…</p>
 <div id="step-1" class="section level3">
 <h3>Step 1</h3>
-<p>Reading the learning2014 data (named as lrndata) into from your local folder. By exploring the structure and the dimensions of the data, we can see that it has 166 rows, in other words 166 observations, and 7 columns, in other words 7 variables. Data consists of variables that contain information about students’ age (in years) (variable age), attitudes toward statistics (variable attitude), exam points (variable points), gender (variable gender), and their learning approaches: deep learning (variable deep), strategic learning (variable stra) and surface learning (variable surf).</p>
-<pre class="r"><code>setwd(&quot;~/Git/IODS-project/data&quot;)
-lrndata &lt;- read.table(&quot;lrndata.csv&quot;)
+<p>Reading the learning2014 data (named as lrndata) into from my local folder. By exploring the structure and the dimensions of the data, we can see that it has 166 rows, in other words 166 observations, and 7 columns, in other words 7 variables. Data consists of variables that contain information about students’ age (in years) (variable age), attitudes toward statistics (variable attitude), exam points (variable points), gender (variable gender), and their learning approaches: deep learning (variable deep), strategic learning (variable stra) and surface learning (variable surf).</p>
+<pre class="r"><code>setwd(&quot;~/Git/IODS-project&quot;)
+lrndata &lt;- read.table (&quot;C:/Users/irisp/Documents/Git/IODS-project/data/lrndata.csv&quot;)
 str(lrndata)</code></pre>
 <pre><code>## &#39;data.frame&#39;:    166 obs. of  7 variables:
 ##  $ gender  : chr  &quot;F&quot; &quot;M&quot; &quot;F&quot; &quot;M&quot; ...
