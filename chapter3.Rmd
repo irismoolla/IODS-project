@@ -1,0 +1,38 @@
+
+## Logistic Regression
+
+Box plots
+
+Box plots are an excellent way of displaying and comparing distributions. A box plot visualizes the 25th, 50th and 75th percentiles (the box), the typical range (the whiskers) and the outliers of a variable.
+
+The whiskers extending from the box can be computed by several techniques. The default (in base R and ggplot) is to extend them to reach to a data point that is no more than 1.5*IQR away from the box, where IQR is the inter quartile range defined as
+
+IQR = 75th percentile - 25th percentile
+
+Values outside the whiskers can be considered as outliers, unusually distant observations.
+
+Logisctic regression
+
+We will now use logistic regression to identify factors related to higher than average student alcohol consumption. You will also attempt to learn to identify (predict) students who consume high amounts of alcohol using background variables and school performance.
+
+Because logistic regression can be used to classify observations into one of two groups (by giving the group probability) it is a binary classification method. 
+
+Odds ratios
+
+From the fact that the computational target variable in the logistic regression model is the log of odds, it follows that applying the exponent function to the modelled values gives the odds:
+
+For this reason, the exponents of the coefficients of a logistic regression model can be interpret as odds ratios between a unit change (vs no change) in the corresponding explanatory variable.
+
+Accuracy and loss functions
+
+A simple measure of performance in binary classification is accuracy: the average number of correctly classified observations.
+
+Classification methods such as logistic regression aim to (approximately) minimize the incorrectly classified observations. The mean of incorrectly classified observations can be thought of as a penalty (loss) function for the classifier. Less penalty = good.
+
+Cross-validation
+
+Cross-validation is a method of testing a predictive model on unseen data. In cross-validation, the value of a penalty (loss) function (mean prediction error) is computed on data not used for finding the model. Low value = good.
+
+Cross-validation gives a good estimate of the actual predictive power of the model. It can also be used to compare different models or classification methods.
+
+Since we know how to make predictions with our model, we can also compute the average number of incorrect predictions.
