@@ -37,168 +37,140 @@ My personal hypotheses about the relationships of those variables with alcohol c
 
 ### Step 4
 
-Numerically and graphically explore the distributions of your chosen variables and their relationships with alcohol consumption (use for example cross-tabulations, bar plots and box plots). Comment on your findings and compare the results of your exploration to your previously stated hypotheses. (0-5 points)
+First, we graphically explore the distributions of my chosen variables. Below you can see histograms which show the distributions of the variables. We can see that the school absences are concentrated on the two ends, low and high absences. Alcohol consumption is skewed towards left which means there are more students who use less alcohol which can also been seen from the distribution of the high alcohol use variable. Also quality of family relationships is skewed, which means there are more students whose family relationships  are good than bad. Going out with friends variable has a normal distribution, and there are a bit more female than male students in the data. 
 
 ```{r}
 # access the tidyverse libraries tidyr, dplyr, ggplot2
 library(tidyr); library(dplyr); library(ggplot2); library(GGally)
 
-plot2 <- ggpairs(pormath, mapping = aes(col = sex, alpha = 0.3), 
-                 columns = c(2,22,24,33,49,50), lower = list(combo = wrap("facethist", 
-                                                                          bins = 20)))
-plot2
+# A bar plot of each variable
+gather(pormath[c(2,22,24,33,49,50)]) %>% ggplot(aes(value)) + facet_wrap("key", scales = "free") + geom_bar()
 
-# initialize a plot of alcohol use
-g1 <- ggplot(data = pormath, aes(x = alc_use, fill = sex))
+```
 
-# define the plot as a bar plot and draw it
-g1 + geom_bar()
 
-# initialize a plot of 'high_use'
-g2 <- ggplot(pormath, aes(high_use))
+Below is a graphical overview of the data which shows (1) boxplots and  scatterplots of each variable pair visualized on left and upper side, (2) variable distributions on the diagonal and (3) Pearson correlation value and significance displayed on the right side of the plot. The colours of the overview represent the values of the gender variable (females and males).
 
-# draw a bar plot of high_use by sex
-g2 + facet_wrap("sex") + geom_bar()
+The box plots show the gender wise distribution of the chosen variables and their lower and higher quartiles and median. Red colour represents female gender and blue colour male gender. The boxplot also show some dots that are outliers or extreme values. 
 
-# use gather() to gather columns into key-value pairs and draw a bar plot of each variable
-gather(pormath[c(2,22,24,33,49,50)]) %>% ggplot(aes(value)) + facet_wrap("key", scales = "free") +geom_bar()
+The distributions of the variables show us the same distributions as the histograms above but now we can see the distributions separately for males and females. 
 
-# produce summary statistics by group
-pormath %>% group_by(sex, high_use) %>% summarise(count = n(), mean_grade = mean(G3))
+The absences and going out variables correlate significantly positively with the students’ alcohol use. Alcohol use correlates significantly negatively with males’ quality of family relationship. Based on these explorations, we can compare the results to my previously stated hypotheses. It seems that all of my hypotheses find support from these results: male consume more alcohol, higher number of average of school absences increases alcohol consumption, better quality family relationships decrease alcohol consumption of males and the more students go out with their friends, the more they consume alcohol. 
 
-pormath %>% group_by(absences, high_use) %>% summarise(count = n(), mean_grade = mean(G3))
 
-pormath %>% group_by(famrel, high_use) %>% summarise(count = n(), mean_grade = mean(G3))
+```{r}
 
-pormath %>% group_by(goout, high_use) %>% summarise(count = n(), mean_grade = mean(G3))
+plot1 <- ggpairs(pormath, mapping = aes(col = sex, alpha = 0.3), 
+                 columns = c(2,22,24,33,49), lower = list(combo = wrap("box")))
+plot1
 
-# initialize a plot of high_use and G3
-g1 <- ggplot(pormath, aes(x = high_use, y = G3, col = sex)) 
+```
 
-# define the plot as a boxplot and draw it
-g1 + geom_boxplot() + ylab("grade")
 
-# initialise a plot of high_use and absences
-g1 <- ggplot(pormath, aes(x = high_use, y = absences, col = sex)) 
 
-# define the plot as a boxplot and draw it
+Similar patterns and relationships can be also detected from the cross tabulation tables below. 
 
-g1 + geom_boxplot() + ylab("grade") + ggtitle("Student absences by alcohol consumption and sex")
+
+```{r}
+
+# Cross tabulation: summary statistics by group
+pormath %>% group_by(sex, high_use) %>% summarise(count = n())
+
+pormath %>% group_by(absences, high_use) %>% summarise(count = n())
+
+pormath %>% group_by(famrel, high_use, sex) %>% summarise(count = n())
+
+pormath %>% group_by(goout, high_use) %>% summarise(count = n())
 
 ```
 
 
 ### Step 5
 
-Use logistic regression to statistically explore the relationship between your chosen variables and the binary high/low alcohol consumption variable as the target variable. Present and interpret a summary of the fitted model. Present and interpret the coefficients of the model as odds ratios and provide confidence intervals for them. Interpret the results and compare them to your previously stated hypothesis. Hint: If your model includes factor variables see for example the first answer of this stackexchange thread on how R treats and how you should interpret these variables in the model output (or use some other resource to study this). (0-5 points)
+Second, I use logistic regression to statistically explore the relationship between my chosen variables and the binary high/low alcohol consumption variable as the target variable. From the summary of the model m, we can see that all the explanatory variables are highly significant and so we can conclude that there is a statistical relationship between high alcohol use and all the explanatory variables. We can also see from the logistic regression coefficients that male students are more likely to have high alcohol consumption than females, having more absences at school and going out with friends more increase high alcohol consumption and having good quality family relationships decrease high alcohol consumption of students. 
 
 
 ```{r}
-# find the model with glm()
-m <- glm(high_use ~ failures + absences + sex, data = pormath, family = "binomial")
+
+m <- glm(high_use ~ sex + absences + famrel + goout, data = pormath, family = "binomial")
 
 # print out a summary of the model
 summary(m)
 
-# print out the coefficients of the model
-coef(m)
+```
+Odds ratios express probabilities and higher odds ratio means a higher probability of something to happen. The sex variables has a odds ratio of 2.94 which means that males have 2.94 times the odds of have high alcohol consumption than females. For students who go out with their friends more, we can say that each increase in the variable going out increases the odds of having high alcohol consumption by 8%.
 
-# find the model with glm()
-m <- glm(high_use ~ failures + absences + sex, data = pormath, family = "binomial")
+When odds ratio is less than 1.00, we need to substract the odds ratio from 1.00 to find the decrease in odds ratio. Thus, better quality family relationships decrease the odds of having high alcohol consumption by (1.00-0.65)x100 = 35%.  
 
-# compute odds ratios (OR)#Create the object OR: Use coef() on the model object to extract the coefficients of the model and 
-#then apply the exp function on the coefficients.'
+Also the odds ratios support the hypotheses that I made earlier. We can say that based of the results of the logistic regression: 1. Males have higher probability of consuming more alcohol than females, 2. Higher number of average of school absences increases the probability of consuming more alcohol, 3. Better quality family relationships decrease the probability of consuming more alcohol, and 4. The more students go out with their friends, the higher probability they have of consuming more alcohol.
+
+
+```{r}
+
+# compute odds ratios (OR)
 OR <- coef(m) %>% exp
 
 # compute confidence intervals (CI)
-#Use confint() on the model object to compute confidence intervals for the coefficients. 
-#Exponentiate the values and assign the results to the object CI. (R does this quite fast, despite the "Waiting.." message)
 CI <- confint(m) %>% exp
 
 # print out the odds ratios with their confidence intervals
 cbind(OR, CI)
 
-#Combine and print out the odds ratios and their confidence intervals. Which predictor has the widest interval? 
-#Does any of the intervals contain 1 and why would that matter?
 ```
 
 
 ### Step 6
 
-Using the variables which, according to your logistic regression model, had a statistical relationship with high/low alcohol consumption, explore the predictive power of you model. Provide a 2x2 cross tabulation of predictions versus the actual values and optionally display a graphic visualizing both the actual values and the predictions. Compute the total proportion of inaccurately classified individuals (= the training error) and comment on all the results. Compare the performance of the model with performance achieved by some simple guessing strategy. (0-3 points)
+Using all the variables which, according to my logistic regression model, had a statistical relationship with high/low alcohol consumption, I explore the predictive power of my model. Below you can see a 2x2 cross tabulation of predictions versus the actual values. It seems that the model has correctly predicted 243 as low and 53 as high alcohol users and wrongly predicted 58 cases as low alcohol users and 16 cases as high alcohol users. 
 
 ```{r}
-# fit the model
-m <- glm(high_use ~ failures + absences + sex, data = pormath, family = "binomial")
 
 # predict() the probability of high_use
 probabilities <- predict(m, type = "response")
 
-# add the predicted probabilities to 'alc'
+# add the predicted probabilities to the data
 pormath <- mutate(pormath, probability = probabilities)
 
 # use the probabilities to make a prediction of high_use
 pormath <- mutate(pormath, prediction = pormath$probability > 0.5)
 
-# see the last ten original classes, predicted probabilities, and class predictions
-select(pormath, failures, absences, sex, high_use, probability, prediction) %>% tail(10)
-
 # tabulate the target variable versus the predictions
 table(high_use = pormath$high_use, prediction = pormath$probability > 0.5)
 
-library(dplyr); library(ggplot2)
+```
 
-# initialize a plot of 'high_use' versus 'probability' in 'alc'
+Below is a graphic visualizing both the actual values and the predictions.
+
+```{r}
+# initialize a plot of 'high_use' versus 'probability' 
 g <- ggplot(pormath, aes(x = probability, y = high_use, col = prediction))
-
-# define the geom as points and draw the plot
 g + geom_point()
+```
 
-# tabulate the target variable versus the predictions
-table(high_use = pormath$high_use, prediction = pormath$prediction) %>% prop.table() %>% addmargins()
+We can measure the performance in binary classification with accuracy which represents the average number of correctly classified observations. I computed the total proportion of inaccurately classified individuals (= the training error) which is 0.3 and means that the model has wrongly predicted 30% of the values, i.e. correctly predicted 70% of the values. The model predictions are better than random guessing or chance since the accuracy of the binary classification is more than 50%. 
 
+
+```{r}
 # define a loss function (mean prediction error)
 loss_func <- function(class, prob) {
   n_wrong <- abs(class - prob) > 0.5
   mean(n_wrong)
 }
 
-# call loss_func to compute the average number of wrong predictions in the (training) data
-#Execute the call to the loss function with prob = 0, meaning you define the probability of high_use as zero for each individual.
+# call loss_func to compute the average number of wrong predictions in the data
+#Execute the call to the loss function with prob = 0, meaning you define the probability of high_use as zero for each individual
 loss_func(class = pormath$high_use, prob = 0)
-loss_func(class = pormath$high_use, prob = 1)
-loss_func(class = pormath$high_use, prob = pormath$probability)
-
-# define a loss function (average prediction error)
-loss_func <- function(class, prob) {
-  n_wrong <- abs(class - prob) > 0.5
-  mean(n_wrong)
-}
-
-#Define the loss function loss_func and compute the mean prediction error for the training data: 
-#The high_use column in alc is the target and the probability column has the predictions.
-
-# compute the average number of wrong predictions in the (training) data
-loss_func(class = pormath$high_use, prob = pormath$probability)
 
 ```
 
-
 ### Step 7
 
-Bonus: Perform 10-fold cross-validation on your model. Does your model have better test set performance (smaller prediction error using 10-fold cross-validation) compared to the model introduced in DataCamp (which had about 0.26 error). Could you find such a model? (0-2 points to compensate any loss of points from the above exercises)
+I performed 10-fold cross-validation on the model m. My model seems to have better test set performance (smaller prediction error using 10-fold cross-validation) compared to the model introduced in DataCamp (which had about 0.26 error). My model has 0.21 prediction error which is smaller than the DataCamp training model. Cross-validation is a method of testing a predictive model on unseen data and it can also be used to compare different models. The lower the value is, the better the model performance and the actual predictive power of the model. 
+
 
 ```{r}
 # K-fold cross-validation
 library(boot)
-cv <- cv.glm(data = pormath, cost = loss_func, glmfit = m, K = nrow(pormath))
-
-#Perform leave-one-out cross-validation and print out the mean prediction error for the testing data. 
-#(nrow(alc) gives the observation count in alc and using K = nrow(alc) defines the leave-one-out method. 
-#The cv.glm function from the 'boot' library computes the error and stores it in delta. 
-
-#Perform 10-fold cross validation. Print out the mean prediction error for the testing data. 
-#Is the prediction error higher or lower on the testing data compared to the training data?
 
 cv <- cv.glm(data = pormath, cost = loss_func, glmfit = m, K = 10)
 
@@ -206,44 +178,3 @@ cv <- cv.glm(data = pormath, cost = loss_func, glmfit = m, K = 10)
 cv$delta[1]
 ```
 
-
-### Step 8
-Super-Bonus: Perform cross-validation to compare the performance of different logistic regression models (= different sets of predictors). Start with a very high number of predictors and explore the changes in the training and testing errors as you move to models with less predictors. Draw a graph displaying the trends of both training and testing errors by the number of predictors in the model. (0-4 points to compensate any loss of points from the above exercises)
-
-
-
-Box plots
-
-Box plots are an excellent way of displaying and comparing distributions. A box plot visualizes the 25th, 50th and 75th percentiles (the box), the typical range (the whiskers) and the outliers of a variable.
-
-The whiskers extending from the box can be computed by several techniques. The default (in base R and ggplot) is to extend them to reach to a data point that is no more than 1.5*IQR away from the box, where IQR is the inter quartile range defined as
-
-IQR = 75th percentile - 25th percentile
-
-Values outside the whiskers can be considered as outliers, unusually distant observations.
-
-Logisctic regression
-
-We will now use logistic regression to identify factors related to higher than average student alcohol consumption. You will also attempt to learn to identify (predict) students who consume high amounts of alcohol using background variables and school performance.
-
-Because logistic regression can be used to classify observations into one of two groups (by giving the group probability) it is a binary classification method. 
-
-Odds ratios
-
-From the fact that the computational target variable in the logistic regression model is the log of odds, it follows that applying the exponent function to the modelled values gives the odds:
-
-For this reason, the exponents of the coefficients of a logistic regression model can be interpret as odds ratios between a unit change (vs no change) in the corresponding explanatory variable.
-
-Accuracy and loss functions
-
-A simple measure of performance in binary classification is accuracy: the average number of correctly classified observations.
-
-Classification methods such as logistic regression aim to (approximately) minimize the incorrectly classified observations. The mean of incorrectly classified observations can be thought of as a penalty (loss) function for the classifier. Less penalty = good.
-
-Cross-validation
-
-Cross-validation is a method of testing a predictive model on unseen data. In cross-validation, the value of a penalty (loss) function (mean prediction error) is computed on data not used for finding the model. Low value = good.
-
-Cross-validation gives a good estimate of the actual predictive power of the model. It can also be used to compare different models or classification methods.
-
-Since we know how to make predictions with our model, we can also compute the average number of incorrect predictions.
