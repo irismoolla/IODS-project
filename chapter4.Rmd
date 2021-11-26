@@ -1,0 +1,124 @@
+
+## Clustering and Classification
+
+This week I learned new techniques of data clustering and classification. With the data already saved into R, I performed and interpreted k-means clustering and . All the R codes, interpretations and explanations of the analysis exercises are found below. 
+
+data source: the Boston data from the MASS package 
+
+
+### Step 1: 
+
+Boston dataset contains 506 rows and 14 columns (506 observations, and 14 variables) and describes housing Values in Suburbs of Boston. Data consists of variables such as per capita crime rate by town (variable crim), average number of rooms per dwelling (variable rm), the proportion of blacks by town (variable black) and median value of owner-occupied homes in \$1000s (variable medv). 
+
+More information about the variables in the Boston dataset can be found here: [https://stat.ethz.ch/R-manual/R-devel/library/MASS/html/Boston.html](https://stat.ethz.ch/R-manual/R-devel/library/MASS/html/Boston.html).
+
+```{r}
+
+library(MASS)
+
+# load the data
+data("Boston")
+str(Boston)
+
+```
+
+### Step 2
+
+First, we look at the summaries of the variables in the Boston data. We see that the data contains mostly numeric variables with the exception of rad which is an integer index variable and chas which is a binary variable. .  
+
+```{r}
+# access the following packages
+library(tidyr); library(dplyr); library(ggplot2); library(GGally); library(corrplot)
+
+summary(Boston)
+
+```
+
+
+Below we can see a graphical overview of histograms of all the variables in the Boston data, combined with the density curves. 
+
+* age variable tells us the proportion of owner-occupied units built prior to 1940. This variable is slightly skewed towards right which mean that there is a high proportion of owner occupied units built prior to 1940. 
+* Also variables black is skewed towards right which means that there is a high proportion of blacks in town. 
+* Variables crim and zn are heavily skewed towards left which means that there is low proportion of per capita crime rate by town and residential land zoned for lots over 25,000 sq.ft. 
+* Also the variables dis and lstat are skewed towards right which tells us that the mean of distances from the Boston suburbs to five Boston employment centres is relatively low, and a low proportion of the population in the Boston suburbs have lower status.
+* Variable chas tells us that there are more suburbs that do not bound the Charles River than which do.
+* Variables medv (median value of owner-occupied homes in \$1000s) and rm (average number of rooms per dwelling) are normally distributed. Also, variables tax (full-value property-tax rate per \$10,000) and rad (index of accessibility to radial highways) would have normal distribution but both of them have outlier variables at the right end of the distribution. 
+* nox variable is slightly skewed towards left which means that there is a lower proportion of nitrogen oxides concentration in the Boston suburbs.
+* ptratio variable seems to have a slightly skewed distribution towards right which tells us that there is a higher proportion of pupil-teacher ratio by town.
+* indus variable has two curves in its distribution which means that the proportion of non-retail business acres per town is either low or high.
+
+
+```{r}
+
+# A bar plot of each variable
+gather(Boston) %>% ggplot(aes(value)) + facet_wrap("key", scales = "free") + 
+  geom_histogram(aes(y = ..density..), 
+                   colour="black", fill="white", bins = 18,) +
+  geom_density(alpha = 0.2, fill = "#FF6666")
+
+```
+Below we can see a graphical overview of the correlations of the all the variables in the Boston data.
+
+We can see high positive correlations between the following variables:
+
+* medv and rm, meaning that the higher the median value of owner-occupied homes is, the higher the average number of rooms per dwelling is.
+* lstat and age, nox and indus, meaning that the higher the lower the proportion of the lower status population is, the higher the age of the buildings, the nitrogen oxides concentration and the proportion of non-retail business acres per town are.
+* tax and rad, nox, indus and crim, meaning that the higher the full-value property-tax rate is, the better the accessibility to radial highways is and the higher the nitrogen oxides concentration, the proportion of non-retail business acres per town and per capita crime rate are.
+* rad and nox, indus and crim, meaning that the better the accessibility to radial highways is, the higher the nitrogen oxides concentration, proportion of non-retail business acres and per capita crime rate are.
+* dis and zn, meaning that the longer the distance from the Boston employment centres is, the higher the proportion of residential land zoned for lots over 25,000 sq.ft is. 
+* age and nox and indus, meaning that the older the age of the buildings, the higher the nitrogen oxides concentration and the proportion of non-retail business acres per town are. 
+* nox and indus, meaning that the higher the nitrogen oxides concentration, the higher the proportion of non-retail business acres per town is.
+
+
+We can see high negative correlations between the following variables:
+
+* dis and age, nox and indus, meaning that the longer the distance from the Boston employment centres is, the lower the age of the buildings, the nitrogen oxides concentration and the proportion of non-retail business acres per town are.
+* medv and lstat, meaning  that the higher the median value of owner-occupied homes is, the lower the proportion of the lower status population is. 
+* lstat and rm, meaning that the higher the lower the proportion of the lower status population is, the lower the average number of rooms per dwelling is. 
+
+```{r}
+
+# calculate the correlation matrix and round it
+cor_matrix<-cor(Boston) %>% round(digits = 2)
+
+# visualize the correlation matrix
+corrplot(cor_matrix, method="circle", type="upper", cl.pos="b", tl.pos="d", tl.cex = 0.6)
+
+```
+
+### Step 3
+
+Standardize the dataset and print out summaries of the scaled data. How did the variables change? Create a categorical variable of the crime rate in the Boston dataset (from the scaled crime rate). Use the quantiles as the break points in the categorical variable. Drop the old crime rate variable from the dataset. Divide the dataset to train and test sets, so that 80% of the data belongs to the train set. (0-2 points)
+
+
+```{r}
+
+```
+
+
+### Step 4
+
+Fit the linear discriminant analysis on the train set. Use the categorical crime rate as the target variable and all the other variables in the dataset as predictor variables. Draw the LDA (bi)plot. (0-3 points)
+
+```{r}
+
+```
+
+
+### Step 5
+
+Save the crime categories from the test set and then remove the categorical crime variable from the test dataset. Then predict the classes with the LDA model on the test data. Cross tabulate the results with the crime categories from the test set. Comment on the results. (0-3 points)
+
+
+```{r}
+
+```
+
+
+### Step 6
+Reload the Boston dataset and standardize the dataset (we did not do this in the Datacamp exercises, but you should scale the variables to get comparable distances). Calculate the distances between the observations. Run k-means algorithm on the dataset. Investigate what is the optimal number of clusters and run the algorithm again. Visualize the clusters (for example with the pairs() or ggpairs() functions, where the clusters are separated with colors) and interpret the results. (0-4 points)
+
+```{r}
+
+```
+
