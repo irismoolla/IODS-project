@@ -19,6 +19,7 @@ library(MASS)
 # load the data
 data("Boston")
 str(Boston)
+dim(Boston)
 
 ```
 
@@ -88,29 +89,120 @@ corrplot(cor_matrix, method="circle", type="upper", cl.pos="b", tl.pos="d", tl.c
 
 ### Step 3
 
-Standardize the dataset and print out summaries of the scaled data. How did the variables change? Create a categorical variable of the crime rate in the Boston dataset (from the scaled crime rate). Use the quantiles as the break points in the categorical variable. Drop the old crime rate variable from the dataset. Divide the dataset to train and test sets, so that 80% of the data belongs to the train set. (0-2 points)
+Standardize the dataset and print out summaries of the scaled data. Now, we can see that compared to the non-standardized dataset, all the variables in the scaled dataset have been rescaled to have a mean of zero and a standard deviation of one.
 
 
 ```{r}
+#standardizing Boston data 
+boston_scaled <- scale(Boston)
+
+# summaries of the scaled variables
+summary(boston_scaled)
+
+# class of the boston_scaled object
+class(boston_scaled)
+
+# change the object to data frame
+boston_scaled <- as.data.frame(boston_scaled)
+```
+
+Next, I created a categorical variable of the crime rate in the Boston dataset (from the scaled crime rate) and used quantiles as the break points in the categorical variable. In addition, I dropoed the old crime rate variable from the dataset. 
+
+```{r}
+
+# summary of the scaled crime rate
+summary(boston_scaled$crim)
+
+# create a quantile vector of crim and print it
+bins <- quantile(boston_scaled$crim)
+bins
+
+# create a categorical variable 'crime'
+crime <- cut(boston_scaled$crim, breaks = bins, include.lowest = TRUE, label=c("low", "med_low", "med_high", "high"))
+
+# look at the table of the new factor crime
+table(crime)
+
+# remove original crim from the dataset
+boston_scaled <- dplyr::select(boston_scaled, -crim)
+
+# add the new categorical value to scaled data
+boston_scaled <- data.frame(boston_scaled, crime)
+```
+
+Here, we divide the Boston dataset into train and test sets, so that 80% of the data belongs to the train set.
+
+```{r}
+
+# number of rows in the Boston dataset 
+n <- nrow(boston_scaled)
+
+# choose randomly 80% of the rows
+ind <- sample(n,  size = n * 0.8)
+
+# create train set
+train <- boston_scaled[ind,]
+
+# create test set 
+test <- boston_scaled[-ind,]
 
 ```
 
-
 ### Step 4
 
-Fit the linear discriminant analysis on the train set. Use the categorical crime rate as the target variable and all the other variables in the dataset as predictor variables. Draw the LDA (bi)plot. (0-3 points)
+Below, I perform a Linear Discriminant analysis which is a classification (and dimension reduction) method. It finds the (linear) combination of the variables that separate the classes of the target variable which can be binary or multiclass variable.
 
 ```{r}
+# linear discriminant analysis
+lda.fit <- lda(crime ~ ., data = train)
+
+# print the lda.fit object
+lda.fit
+
+```
+
+LDA can be visualized with a biplot which is done below: 
+
+```{r}
+# the function for lda biplot arrows
+lda.arrows <- function(x, myscale = 1, arrow_heads = 0.1, color = "red", tex = 0.75, choices = c(1,2)){
+  heads <- coef(x)
+  arrows(x0 = 0, y0 = 0, 
+         x1 = myscale * heads[,choices[1]], 
+         y1 = myscale * heads[,choices[2]], col=color, length = arrow_heads)
+  text(myscale * heads[,choices], labels = row.names(heads), 
+       cex = tex, col=color, pos=3)
+}
+
+# target classes as numeric
+classes <- as.numeric(train$crime)
+
+# plot the lda results
+plot(lda.fit, dimen = 2, col = classes, pch = classes)
+lda.arrows(lda.fit, myscale = 2.3)
 
 ```
 
 
 ### Step 5
 
-Save the crime categories from the test set and then remove the categorical crime variable from the test dataset. Then predict the classes with the LDA model on the test data. Cross tabulate the results with the crime categories from the test set. Comment on the results. (0-3 points)
+Here, first, I save the crime categories from the test set and then remove the categorical crime variable from the test dataset. Second, I predict the classes with the LDA model on the test data and cross tabulate the results with the crime categories from the test set. 
 
+We can see that the LDA model predicted the all the class high of the crime rate categories correctly. Med_high is also mostly correctly predicted, even though the LDA model 2 of the med_high classes were predicted as high and 3 as med_low. The model predicted med_low the worst as only half of the classes were correctly predicted and the other half was predicted as med_high or low. 
 
 ```{r}
+
+# save the correct classes from test data
+correct_classes <- test$crime
+
+# remove the crime variable from test data
+test <- dplyr::select(test, -crime)
+
+# predict classes with test data
+lda.pred <- predict(lda.fit, newdata = test)
+
+# cross tabulate the results
+table(correct = correct_classes, predicted = lda.pred$class)
 
 ```
 
@@ -119,6 +211,58 @@ Save the crime categories from the test set and then remove the categorical crim
 Reload the Boston dataset and standardize the dataset (we did not do this in the Datacamp exercises, but you should scale the variables to get comparable distances). Calculate the distances between the observations. Run k-means algorithm on the dataset. Investigate what is the optimal number of clusters and run the algorithm again. Visualize the clusters (for example with the pairs() or ggpairs() functions, where the clusters are separated with colors) and interpret the results. (0-4 points)
 
 ```{r}
+
+# reload the data
+data("Boston")
+
+#standardizing Boston data 
+boston_scaled <- scale(Boston)
+
+# change the object to data frame
+boston_scaled <- as.data.frame(boston_scaled)
+
+# euclidean distance matrix
+dist_eu <- dist(Boston)
+
+# look at the summary of the distances
+summary(dist_eu)
+
+```
+
+K-means is maybe the most used and known clustering method. It is an unsupervised method, that assigns observations to groups or clusters based on similarity of the objects. In the previous exercise we got a hang of distances. The kmeans() function counts the distance matrix automatically, but it is good to know the basics.
+
+
+```{r}
+km <-kmeans(Boston, centers = 3)
+
+# plot the Boston dataset with clusters
+pairs(Boston[6:10], col = km$cluster)
+```
+
+
+K-means needs the number of clusters as an argument. There are many ways to look at the optimal number of clusters and a good way might depend on the data you have.
+
+One way to determine the number of clusters is to look at how the total of within cluster sum of squares (WCSS) behaves when the number of cluster changes (the calculation of total WCSS was explained in the video before). When you plot the number of clusters and the total WCSS, the optimal number of clusters is when the total WCSS drops radically.
+
+K-means might produce different results every time, because it randomly assigns the initial cluster centers. The function set.seed() can be used to deal with that.
+
+```{r}
+set.seed(123)
+
+# determine the number of clusters
+k_max <- 10
+
+# calculate the total within sum of squares
+twcss <- sapply(1:k_max, function(k){kmeans(Boston, k)$tot.withinss})
+
+# visualize the results
+qplot(x = 1:k_max, y = twcss, geom = 'line')
+
+# k-means clustering
+km <-kmeans(Boston, centers = 2)
+
+# plot the Boston dataset with clusters
+pairs(Boston, col = km$cluster)
 
 ```
 
