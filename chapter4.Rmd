@@ -188,7 +188,7 @@ lda.arrows(lda.fit, myscale = 2.3)
 
 Here, first, I save the crime categories from the test set and then remove the categorical crime variable from the test dataset. Second, I predict the classes with the LDA model on the test data and cross tabulate the results with the crime categories from the test set. 
 
-We can see that the LDA model predicted the all the class high of the crime rate categories correctly. Med_high is also mostly correctly predicted, even though the LDA model 2 of the med_high classes were predicted as high and 3 as med_low. The model predicted med_low the worst as only half of the classes were correctly predicted and the other half was predicted as med_high or low. 
+We can see that the LDA model predicted the all the class high of the crime rate categories correctly. Med_high is also mostly correctly predicted, even though the LDA model 2 of the med_high classes were predicted as high and 3 as med_low. The model predicted med_low worse, as only half (15) of the classes were correctly predicted. For med_low, the other half was predicted as med_high (8) or low (4). The worst prediction was done for low, as only third (7) of the classes were correctly predicted. Mostly they were predicted as med_low (14) and one as med_high.
 
 ```{r}
 
@@ -208,7 +208,8 @@ table(correct = correct_classes, predicted = lda.pred$class)
 
 
 ### Step 6
-Reload the Boston dataset and standardize the dataset (we did not do this in the Datacamp exercises, but you should scale the variables to get comparable distances). Calculate the distances between the observations. Run k-means algorithm on the dataset. Investigate what is the optimal number of clusters and run the algorithm again. Visualize the clusters (for example with the pairs() or ggpairs() functions, where the clusters are separated with colors) and interpret the results. (0-4 points)
+
+Here, the Boston dataset is reloaded and standardized. I have calculated the distances between the observations of the data with Euclidean distance which is the most common or "normal" distance measure. Similarity or dissimilarity of objects can be measured with distance measures. 
 
 ```{r}
 
@@ -229,22 +230,15 @@ summary(dist_eu)
 
 ```
 
-K-means is maybe the most used and known clustering method. It is an unsupervised method, that assigns observations to groups or clusters based on similarity of the objects. In the previous exercise we got a hang of distances. The kmeans() function counts the distance matrix automatically, but it is good to know the basics.
-
+Next, we run k-means algorithm on the dataset. K-means is the most known clustering method. It is an unsupervised method, that assigns observations to groups or clusters based on similarity of the objects.
 
 ```{r}
 km <-kmeans(Boston, centers = 3)
 
-# plot the Boston dataset with clusters
-pairs(Boston[6:10], col = km$cluster)
 ```
 
 
-K-means needs the number of clusters as an argument. There are many ways to look at the optimal number of clusters and a good way might depend on the data you have.
-
-One way to determine the number of clusters is to look at how the total of within cluster sum of squares (WCSS) behaves when the number of cluster changes (the calculation of total WCSS was explained in the video before). When you plot the number of clusters and the total WCSS, the optimal number of clusters is when the total WCSS drops radically.
-
-K-means might produce different results every time, because it randomly assigns the initial cluster centers. The function set.seed() can be used to deal with that.
+K-means needs the number of clusters set in advance and the optimal number of clusters can be determined by looking at how the total of within cluster sum of squares (WCSS) behaves when the number of cluster changes. Plotting the number of clusters and the total WCSS, the optimal number of clusters is when the total WCSS drops radically.
 
 ```{r}
 set.seed(123)
@@ -258,11 +252,27 @@ twcss <- sapply(1:k_max, function(k){kmeans(Boston, k)$tot.withinss})
 # visualize the results
 qplot(x = 1:k_max, y = twcss, geom = 'line')
 
+```
+
+When investigating the optimal number of clusters, we see that there is a radical drop in the total WCSS when the number of clusters is 2. I run k-means algorithm again setting the number of clusters as 2. From the visualization of the clusters, we can see that the data clusters quite well between the two clusters, and the observation pairs seem to cluster around the two clusters (colours black and red represent the clusters) and the observations are separated from each other depending on the cluster they belong to. However, there are a few variables, such as rm and black, that do not seem to cluster that well according to the two clusters. The observation pairs between rm and black and other variables seem to overlap and there are outlier observations in both clusters (separate black and red dots). 
+
+
+```{r}
+
 # k-means clustering
 km <-kmeans(Boston, centers = 2)
 
+#setting the cluster variable as categorical
+class(km$cluster)
+km$cluster <- as.factor(km$cluster)
+
 # plot the Boston dataset with clusters
-pairs(Boston, col = km$cluster)
+pairs(Boston, col = km$cluster) 
+
+#taking a closer look at the clusters in the data
+pairs(Boston[1:10], col = km$cluster)
+pairs(Boston[6:14], col = km$cluster)
+
 
 ```
 
