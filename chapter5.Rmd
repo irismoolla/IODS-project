@@ -1,0 +1,242 @@
+
+## Dimensionality reduction techniques
+
+This week I learned new techniques to reduce the dimensionality of a dataset. With the data already saved into R, I performed and interpreted principal component analysis and Multiple Correspondence Analysis. All the R codes, interpretations and explanations of the analysis exercises are found below. 
+
+data source: [http://hdr.undp.org/en/content/human-development-index-hdi](http://hdr.undp.org/en/content/human-development-index-hdi) 
+
+
+```{r}
+date()
+```
+
+
+### Step 1: 
+
+The data used in this exercise is a joined data set of Human Development Index and Gender Development Index that is available on the United Nations Development Programme’s website (link above). The human data set consists of 155 countries (observations) and 8 variables.
+
+Description of the variables in the human data:
+
+gni  = Gross National Income (GNI) per capita
+lifex = Life expectancy at birth
+expedu = Expected years of schooling 
+matmor = Maternal mortality ratio
+adlbr = Adolescent birth rate
+reppar = Percentage of female representatives in parliament
+ratio_2edu = the ratio of Female and Male populations with secondary education in each country (edu2F / edu2M)
+ratio_lab = the ratio of labour force participation of females and males in each country (labF / labM)
+
+The dimensions of the data and summaries of the variables are shown below.
+
+
+```{r}
+
+setwd("~/Git/IODS-project")
+human <- read.table("C:/Users/irisp/Documents/Git/IODS-project/data/human.csv")
+
+# access the following packages
+library(tidyr); library(dplyr); library(ggplot2); library(GGally); library(corrplot)
+
+dim (human)
+summary (human) 
+
+```
+
+Below you can see two graphical overviews of the data. From the ggpairs visualization we can see that variables ratio_edu2 and expedu have a normal distribution, the distributions of the variables ratio_lab and lifex are skewed towards right (meaning there are more higher values than lower values) and the distributions of the rest of the variables is skewed towards left (meaning there are more lower than higher values). 
+
+
+```{r}
+# visualize the 'human' variables
+ggpairs(human)
+```
+From the ggpairs plot and correlation plot (corrplot) we can comment on the relationships between the variables. 
+
+We can see positive and statistically significant correlations between the following variables:
+
+* lifex and ratio_2edu, gni and reppar, meaning that the higher the life expectancy in a country is, the higher the ratio of female and male populations with secondary education, GNI and percentage of female representatives in parliament are.
+* expedu and ratio_2edu, lifex, gni and reppar, meaning that the higher expected years of schooling is, the higher the ratio of female and male populations with secondary education is, life expectancy, GNI and percentage of female representatives in parliament are. 
+* gni and ratio_2edu, lifex and expedu, meaning that the higher the GNI is, the higher the ratio of female and male populations with secondary education is, life expectancy and expected years of schooling are. 
+* matmor and adlbr and ratio_lab, meaning that  the higher the maternal mortality ratio is, the higher the adolescent birth rate and the ratio of labour force participation of females and males are. 
+* reppar and ratio_lab, lifex and expedu, meaning that the the higher the percentage of female representatives in parliament are,  the higher the ratio of labour force participation of females and males, life expectancy and expected years of schooling are. 
+
+We can see negative and statistically significant correlations between the following variables:
+
+* lifex and matmor and adlbr, meaning that  the higher the life expectancy in a country is, the lower the maternal mortality ratio and adolescent birth rate are. 
+* expedu and matmor and adlbr, meaning that  the higher the expected years of schooling in a country is, the lower the maternal mortality ratio and adolescent birth rate are. 
+* gni and matmor and adlbr, meaning that  the higher the GNI of a country is, the lower the maternal mortality ratio and adolescent birth rate are. 
+* matmor and ratio_2edu, lifex, expedu and gni, meaning that the higher the maternal mortality ratio is, the lower the the ratio of female and male populations with secondary education, life expectancy, expected years of schooling and GNI are. 
+* adlbr and ratio_2edu, lifex, expedu and gni, meaning that the higher the adolescent birth rate is, the lower the the ratio of female and male populations with secondary education, life expectancy, expected years of schooling and GNI are. 
+
+
+```{r}
+# compute the correlation matrix and visualize it with corrplot
+cor(human) %>% corrplot
+```
+
+### Step 2:
+
+
+Next, Principal Component Analysis (PCA) is performed by the Singular Value Decomposition (SVD). The prcomp() function in R uses the SVD and is the preferred, more numerically accurate method. It decomposes a data matrix into a product of smaller matrices, which let's us extract the underlying principal components. This makes it possible to approximate a lower dimensional representation of the data by choosing only a few principal components.
+
+First, the PCA is performed with the not standardized human data. From the summary of the PCA, we can see that the data is transformed to 8 different dimensions called principal components. Most variability in the data are captured by the first and second principal components (see standard deviations). The 1st principal component captures the maximum amount of variance from the features in the original data; the 2nd principal component captures the maximum amount of variability left and this is true for each of the following principal components. All the principal components are all uncorreleated and each of them is less important than the previous one, in terms of captured variance.
+
+
+```{r}
+
+# perform principal component analysis (with the SVD method)
+pca1_human <- prcomp(human)
+
+pca1 <- summary(pca1_human)
+
+pca1
+```
+
+Below is a biplot of the PCA with unstandardized data displaying the observations by the first two principal components (PC1 coordinate in x-axis, PC2 coordinate in y-axis), along with arrows representing the original variables. 
+
+A biplot is a way of visualizing the connections between two representations of the same data. A biplot consists of a scatter plot in which the observations are placed on x and y coordinates defined by two principal components (PC's) and arrows, which visualize the connections between the original variables and the PC's. The following connections hold:
+
+* The angle between the arrows can be interpret as the correlation between the variables.
+* The angle between a variable and a PC axis can be interpret as the correlation between the two.
+* The length of the arrows are proportional to the standard deviations of the variables
+
+
+```{r}
+
+
+biplot(pca1_human, choices = 1:2, cex = c(0.8, 1), col = c("grey40", "deeppink2"))
+
+# rounded percentages of variance captured by each PC
+pca_pr <- round(100*pca1$importance[2,], digits = 1) 
+
+# print out the percentages of variance
+pca_pr
+
+# create object pc_lab to be used as axis labels
+pc_lab <- paste0(names(pca_pr), " (", pca_pr, "%)")
+
+# draw a biplot of the principal component representation and the original variables
+biplot(pca1_human, cex = c(0.6, 1), col = c("grey40", "deeppink2"), xlab = pc_lab[1], ylab = pc_lab[2])
+
+```
+
+
+### Step 3:
+
+
+Second, I standardize the variables in the human data and repeat the above principal component analysis. 
+
+Interpret the results of both analysis (with and without standardizing). Are the results different? Why or why not? Include captions (brief descriptions) in your plots where you describe the results by using not just your variable names, but the actual phenomenons they relate to. (0-4 points)
+
+
+PCA is sensitive to the relative scaling of the original features and assumes that features with larger variance are more important than features with smaller variance.
+Standardization of the features before PCA is often a good idea.
+
+```{r}
+
+# standardize the variables
+human_std <- scale(human)
+
+# perform principal component analysis (with the SVD method)
+pca2_human <- prcomp(human_std)
+
+pca2 <- summary(pca2_human)
+```
+
+
+
+```{r}
+
+# rounded percentages of variance captured by each PC
+pca_pr_std <- round(100*pca2$importance[2,], digits = 1) 
+
+# print out the percentages of variance
+pca_pr_std
+
+# create object pc_lab to be used as axis labels
+pc_lab_std <- paste0(names(pca_pr_std), " (", pca_pr_std, "%)")
+
+# draw a biplot
+biplot(pca2_human, cex = c(0.6, 1), col = c("grey40", "deeppink2"), 
+       xlab = pc_lab_std[1], ylab = pc_lab_std[2])
+
+```
+
+### Step 4:
+
+Give your personal interpretations of the first two principal component dimensions based on the biplot drawn after PCA on the standardized human data. (0-2 points)
+
+
+On the linear algebra level, Singular Value Decomposition (SVD) is the most important tool for reducing the number of dimensions in multivariate data.
+
+The SVD literally decomposes a matrix into a product of smaller matrices and reveals the most important components
+Principal Component Analysis (PCA) is a statistical procedure which does the same thing
+Correspondence Analysis (CA) or Multiple CA (MCA) can be used if the data consists of categorical variables
+The classification method LDA can also be considered as a dimensionality reduction technique
+Principal Component Analysis (PCA)
+
+
+### Step 5:
+
+Lastly, I perform the Multiple Correspondence Analysis on the tea data (loaded from the package Factominer). Before the analysis, I explored the structure and the dimensions of the data and visualized it after selecting six columns of the data to keep for the analysis. 
+
+```{r}
+#install.packages("FactoMineR")
+library(FactoMineR)
+
+# load the data
+data("tea")
+str(tea)
+dim(tea)
+
+# column names to keep in the dataset
+keep_columns <- c("Tea", "How", "how", "sugar", "where", "lunch")
+
+# select the 'keep_columns' to create a new dataset
+tea_time <- dplyr::select(tea, one_of(keep_columns))
+
+# look at the summaries and structure of the data
+summary(tea_time)
+str(tea_time)
+
+# visualize the dataset
+gather(tea_time) %>% ggplot(aes(value)) + facet_wrap("key", scales = "free") + geom_bar() + theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8))
+
+
+```
+
+Next, Multiple Correspondence Analysis (MCA) is performed on the tea data.  MCA is a method to analyze qualitative adn/or categorical data and it is an extension of Correspondence analysis (CA). MCA can be used to detect patterns or structure in the data as well as in dimension reduction.
+
+Interpret the results of the MCA 
+
+Output of MCA summary contains…
+
+Eigenvalues: the variances and the percentage of variances retained by each dimension
+Individuals: the individuals coordinates, the individuals contribution (%) on the dimension and the cos2 (the squared correlations) on the dimensions.
+Output of MCA summary contains…
+
+Categories: the coordinates of the variable categories, the contribution (%), the cos2 (the squared correlations) and v.test value. The v.test follows normal distribution: if the value is below/above ± 1.96, the coordinate is significantly different from zero.
+Categorical variables: the squared correlation between each variable and the dimensions. If the value is close to one, it indicates a strong link
+
+```{r}
+
+# multiple correspondence analysis
+mca <- MCA(tea_time, graph = FALSE)
+
+# summary of the model
+summary(mca)
+
+```
+I have drawn here a variable biplot of the analysis.  Comment on the output of the plots. (0-4 points)
+
+On the right we have MCA factor map (biplot), where are variables drawn on the first two dimensions
+The MCA biplot is a good visualization to see the possible variable patterns
+The distance between variable categories gives a measure of their similarity
+For example Label2 and Name2 are more similar than Label2 and Level2 and Label3 is different from all the other categories
+
+```{r}
+
+# visualize MCA
+plot(mca, invisible=c("ind"), habillage = "quali", graph.type = "classic")
+
+```
+

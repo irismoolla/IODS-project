@@ -1,7 +1,7 @@
 
 ## Clustering and Classification
 
-This week I learned new techniques of data clustering and classification. With the data already saved into R, I performed and interpreted k-means clustering and . All the R codes, interpretations and explanations of the analysis exercises are found below. 
+This week I learned new techniques of data clustering and classification. With the data already saved into R, I performed and interpreted k-means clustering and linear discriminant analysis. All the R codes, interpretations and explanations of the analysis exercises are found below. 
 
 data source: the Boston data from the MASS package 
 
