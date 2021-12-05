@@ -78,7 +78,7 @@ cor(human) %>% corrplot
 
 Next, Principal Component Analysis (PCA) is performed by the Singular Value Decomposition (SVD). The prcomp() function in R uses the SVD and is the preferred, more numerically accurate method. It decomposes a data matrix into a product of smaller matrices, which let's us extract the underlying principal components. This makes it possible to approximate a lower dimensional representation of the data by choosing only a few principal components.
 
-First, the PCA is performed with the not standardized human data. From the summary of the PCA, we can see that the data is transformed to 8 different dimensions called principal components. Most variability in the data are captured by the first and second principal components (see standard deviations). The 1st principal component captures the maximum amount of variance from the features in the original data; the 2nd principal component captures the maximum amount of variability left and this is true for each of the following principal components. All the principal components are all uncorreleated and each of them is less important than the previous one, in terms of captured variance.
+First, the PCA is performed with the not standardized human data. From the summary of the PCA1, we can see that the data is transformed to 8 different dimensions called principal components. Most variability in the data are captured by the first and second principal components (see standard deviations). The 1st principal component captures the maximum amount of variance from the features in the original data; the 2nd principal component captures the maximum amount of variability left and this is true for each of the following principal components. All the principal components are all uncorreleated and each of them is less important than the previous one, in terms of captured variance.
 
 
 ```{r}
@@ -99,6 +99,7 @@ A biplot is a way of visualizing the connections between two representations of 
 * The angle between a variable and a PC axis can be interpret as the correlation between the two.
 * The length of the arrows are proportional to the standard deviations of the variables
 
+From the figure below, it is difficult to see the arrows and thus, interpret it properly. The first PC captures all the variation in the data and that is the reason why PC2 captures 0 % of the variability. GNI feature contributes to the first PC as its arrow is pointing towards the direction of the x-axis and even though, we cannot see the arrows of the other features, they probably contribute to the first PC as well because of the amount of the variance the first PC captures. 
 
 ```{r}
 
@@ -123,13 +124,8 @@ biplot(pca1_human, cex = c(0.6, 1), col = c("grey40", "deeppink2"), xlab = pc_la
 ### Step 3:
 
 
-Second, I standardize the variables in the human data and repeat the above principal component analysis. 
+Second, I standardize the variables in the human data and repeat the above principal component analysis. From the summary of the PCA2, we can see the first PC again captures most variability in the data and the second PC the second most. The results between PCA1 and PCA2 differ because of the standardization of the data. Standardization is needed to get more accurate results as PCA is sensitive to the relative scaling of the original features and assumes that features with larger variance are more important than features with smaller variance.
 
-Interpret the results of both analysis (with and without standardizing). Are the results different? Why or why not? Include captions (brief descriptions) in your plots where you describe the results by using not just your variable names, but the actual phenomenons they relate to. (0-4 points)
-
-
-PCA is sensitive to the relative scaling of the original features and assumes that features with larger variance are more important than features with smaller variance.
-Standardization of the features before PCA is often a good idea.
 
 ```{r}
 
@@ -140,8 +136,14 @@ human_std <- scale(human)
 pca2_human <- prcomp(human_std)
 
 pca2 <- summary(pca2_human)
-```
 
+pca2
+```
+From the figure below, we see that the first PC captures 50.6 % and  second PC 16.2 % of the variation in the data. Expedu, lifex, ratio_2edu and gni features contribute to the first PC as well as matmor and adlbr, even though they point to the opposite direction than the other four featues. When features diverge and form a large angle (close to 180°), they are negatively correlated with each other which the correlations and correlation plot above also confirm: expedu, lifex, ratio_2edu and gni correlate strongly with each other and all of them correlate negatively with  matmor and adlbr, that in turn, correlate quite highly positively with each other. We can see this from the vectors that each of the features have: when the vectors are close to each other and form a small angle, the variables they represent are positively correlated. 
+
+Reppar and ratio_lab features in turn contribute to the second PC as their arrows point to to the direction of the y-axis. Reppar and ratio_lab meet the other features at 90°, which means those variables they represent are not likely to be correlated. This is also supported by the descriptive statistics at the beginning of this exercise.
+
+Compared to biplot of PCA1, the observations (countries) are more spread accross the scatter plot; in the PCA1 biplot the observations were concentrated on the top right corner of the plot. This difference is also due to the different scaling of the data. Also, in the PCA1, GNI feature is assumed to be more important than the other features because GNI has the largest variance of the original scale of the data. The features with smaller variance are all concentrated on one point in the PCA1 biplot but when the original scales are standardized all the features are assumed to have the same importance and none of them stand out in the PCA2 biplot. 
 
 
 ```{r}
@@ -156,23 +158,17 @@ pca_pr_std
 pc_lab_std <- paste0(names(pca_pr_std), " (", pca_pr_std, "%)")
 
 # draw a biplot
-biplot(pca2_human, cex = c(0.6, 1), col = c("grey40", "deeppink2"), 
+biplot(pca2_human, cex = c(0.5, 0.8), col = c("grey40", "deeppink2"), 
        xlab = pc_lab_std[1], ylab = pc_lab_std[2])
 
 ```
 
 ### Step 4:
 
-Give your personal interpretations of the first two principal component dimensions based on the biplot drawn after PCA on the standardized human data. (0-2 points)
+I would interpret that the first two principal component dimensions based on the biplot drawn after PCA on the standardized human data represent following: 
 
-
-On the linear algebra level, Singular Value Decomposition (SVD) is the most important tool for reducing the number of dimensions in multivariate data.
-
-The SVD literally decomposes a matrix into a product of smaller matrices and reveals the most important components
-Principal Component Analysis (PCA) is a statistical procedure which does the same thing
-Correspondence Analysis (CA) or Multiple CA (MCA) can be used if the data consists of categorical variables
-The classification method LDA can also be considered as a dimensionality reduction technique
-Principal Component Analysis (PCA)
+* The first principal component is influenced by these features: Gross National Income per capita, life expectancy at birth, expected years of schooling, the ratio of Female and Male populations with secondary education in each country, maternal mortality ratio and adolescent birth rate. I would think this PC represents the development of a society in terms of wealth, health and education. 
+* The second principal component is influenced by these two features: percentage of female representatives in parliament and the ratio of labour force participation of females and males in each country. I would think this PC represents gender inequality in labour market.
 
 
 ### Step 5:
@@ -204,18 +200,13 @@ gather(tea_time) %>% ggplot(aes(value)) + facet_wrap("key", scales = "free") + g
 
 ```
 
-Next, Multiple Correspondence Analysis (MCA) is performed on the tea data.  MCA is a method to analyze qualitative adn/or categorical data and it is an extension of Correspondence analysis (CA). MCA can be used to detect patterns or structure in the data as well as in dimension reduction.
+Next, Multiple Correspondence Analysis (MCA) is performed on the tea data.  MCA is a method to analyze qualitative adn/or categorical data and it is an extension of Correspondence analysis (CA). MCA can be used to detect patterns or structure in the data as well as in dimension reduction, just like PCA.
 
-Interpret the results of the MCA 
-
-Output of MCA summary contains…
-
-Eigenvalues: the variances and the percentage of variances retained by each dimension
-Individuals: the individuals coordinates, the individuals contribution (%) on the dimension and the cos2 (the squared correlations) on the dimensions.
-Output of MCA summary contains…
-
-Categories: the coordinates of the variable categories, the contribution (%), the cos2 (the squared correlations) and v.test value. The v.test follows normal distribution: if the value is below/above ± 1.96, the coordinate is significantly different from zero.
-Categorical variables: the squared correlation between each variable and the dimensions. If the value is close to one, it indicates a strong link
+MCA summary contains the following information of the MCA dimensions: 
+* Eigenvalues, which are the variances and the percentage of variances retained by each dimension
+* Individuals, which are the individuals coordinates, the individuals contribution (%) on the dimension and the cos2 (the squared correlations) on the dimensions.
+* Categories, which are the coordinates of the variable categories, the contribution (%), the cos2 (the squared correlations) and v.test value. The v.test follows normal distribution: if the value is below/above ± 1.96, the coordinate is significantly different from zero.
+* Categorical variables which represent the squared correlation between each variable and the dimensions. If the value is close to one, it indicates a strong link.
 
 ```{r}
 
@@ -226,12 +217,7 @@ mca <- MCA(tea_time, graph = FALSE)
 summary(mca)
 
 ```
-I have drawn here a variable biplot of the analysis.  Comment on the output of the plots. (0-4 points)
-
-On the right we have MCA factor map (biplot), where are variables drawn on the first two dimensions
-The MCA biplot is a good visualization to see the possible variable patterns
-The distance between variable categories gives a measure of their similarity
-For example Label2 and Name2 are more similar than Label2 and Level2 and Label3 is different from all the other categories
+I have drawn below a variable biplot of the analysis where are variables drawn on the first two dimensions. The MCA biplot visualizes variable patterns in the data and the distances between variable categories gives a measure of their similarity. For example categories milk, Earl grey and sugar are more similar to each other than black and no sugar which in turn are similar. Also not lunch and alone are similar to each other as their distance from each other is short. Unpackaged and tea shop are different from all the other categories since they are located further away from the others. 
 
 ```{r}
 
