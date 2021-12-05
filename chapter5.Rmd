@@ -203,10 +203,12 @@ gather(tea_time) %>% ggplot(aes(value)) + facet_wrap("key", scales = "free") + g
 Next, Multiple Correspondence Analysis (MCA) is performed on the tea data.  MCA is a method to analyze qualitative adn/or categorical data and it is an extension of Correspondence analysis (CA). MCA can be used to detect patterns or structure in the data as well as in dimension reduction, just like PCA.
 
 MCA summary contains the following information of the MCA dimensions: 
-* Eigenvalues, which are the variances and the percentage of variances retained by each dimension
+
+* Eigenvalues, which are the variances and the percentage of variances retained by each dimension and as in the PCA, the first dimension captures most variability in the data and the following less and less. 
 * Individuals, which are the individuals coordinates, the individuals contribution (%) on the dimension and the cos2 (the squared correlations) on the dimensions.
-* Categories, which are the coordinates of the variable categories, the contribution (%), the cos2 (the squared correlations) and v.test value. The v.test follows normal distribution: if the value is below/above ± 1.96, the coordinate is significantly different from zero.
-* Categorical variables which represent the squared correlation between each variable and the dimensions. If the value is close to one, it indicates a strong link.
+* Categories, which are the coordinates of the variable categories, the contribution (%), the cos2 (the squared correlations) and v.test value. The v.test follows normal distribution: if the value is below/above ± 1.96, the coordinate is significantly different from zero. For the first dimension, only two categories are not significantly different from zero: sugar and alone, others are significant.  For the second dimension, only category black is not significant and for the third dimension, categories green, milk, tea bag, tea bag+unpackaged and unpackaged are not significant.   
+* Categorical variables which represent the squared correlation between each variable and the dimensions. If the value is close to one, it indicates a strong link. The original categorical variables how and where influence strongly on the first dimension but also on the second dimension; and tea, How and sugar on the third dimension. Variable lunch does not share a strong link with none of the first three dimensions. 
+
 
 ```{r}
 
@@ -217,7 +219,7 @@ mca <- MCA(tea_time, graph = FALSE)
 summary(mca)
 
 ```
-I have drawn below a variable biplot of the analysis where are variables drawn on the first two dimensions. The MCA biplot visualizes variable patterns in the data and the distances between variable categories gives a measure of their similarity. For example categories milk, Earl grey and sugar are more similar to each other than black and no sugar which in turn are similar. Also not lunch and alone are similar to each other as their distance from each other is short. Unpackaged and tea shop are different from all the other categories since they are located further away from the others. 
+I have drawn below a variable biplot of the analysis where are variables drawn on the first two dimensions. The MCA biplot visualizes variable patterns in the data and the distances between variable categories gives a measure of their similarity. For example categories milk, Earl grey and sugar are more similar to each other than black and no sugar which in turn are similar. Also not lunch and alone are similar to each other as their distance from each other is short. Unpackaged and tea shop are different from all the other categories since they are located further away from the others. We can also see that first dimension captures 15.24 % of the variation and second dimension 14.23 % of the variation in the data. 
 
 ```{r}
 
