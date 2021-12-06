@@ -29,7 +29,7 @@ ratio_lab = the ratio of labour force participation of females and males in each
 The dimensions of the data and summaries of the variables are shown below.
 
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 
 setwd("~/Git/IODS-project")
 human <- read.table("C:/Users/irisp/Documents/Git/IODS-project/data/human.csv")
@@ -45,7 +45,7 @@ summary (human)
 Below you can see two graphical overviews of the data. From the ggpairs visualization we can see that variables ratio_edu2 and expedu have a normal distribution, the distributions of the variables ratio_lab and lifex are skewed towards right (meaning there are more higher values than lower values) and the distributions of the rest of the variables is skewed towards left (meaning there are more lower than higher values). 
 
 
-```{r}
+```{r fig.height=8, fig.width=10, message=FALSE}
 # visualize the 'human' variables
 ggpairs(human)
 ```
@@ -68,7 +68,7 @@ We can see negative and statistically significant correlations between the follo
 * adlbr and ratio_2edu, lifex, expedu and gni, meaning that the higher the adolescent birth rate is, the lower the the ratio of female and male populations with secondary education, life expectancy, expected years of schooling and GNI are. 
 
 
-```{r}
+```{r fig.height=7, fig.width=7}
 # compute the correlation matrix and visualize it with corrplot
 cor(human) %>% corrplot
 ```
@@ -101,7 +101,7 @@ A biplot is a way of visualizing the connections between two representations of 
 
 From the figure below, it is difficult to see the arrows and thus, interpret it properly. The first PC captures all the variation in the data and that is the reason why PC2 captures 0 % of the variability. GNI feature contributes to the first PC as its arrow is pointing towards the direction of the x-axis and even though, we cannot see the arrows of the other features, they probably contribute to the first PC as well because of the amount of the variance the first PC captures. 
 
-```{r}
+```{r fig.height=7, fig.width=7, message=FALSE, warning=FALSE}
 
 
 biplot(pca1_human, choices = 1:2, cex = c(0.8, 1), col = c("grey40", "deeppink2"))
@@ -139,14 +139,14 @@ pca2 <- summary(pca2_human)
 
 pca2
 ```
-From the figure below, we see that the first PC captures 50.6 % and  second PC 16.2 % of the variation in the data. Expedu, lifex, ratio_2edu and gni features contribute to the first PC as well as matmor and adlbr, even though they point to the opposite direction than the other four featues. When features diverge and form a large angle (close to 180°), they are negatively correlated with each other which the correlations and correlation plot above also confirm: expedu, lifex, ratio_2edu and gni correlate strongly with each other and all of them correlate negatively with  matmor and adlbr, that in turn, correlate quite highly positively with each other. We can see this from the vectors that each of the features have: when the vectors are close to each other and form a small angle, the variables they represent are positively correlated. 
+From the figure below, we see that the first PC captures 53.6 % and  second PC 16.2 % of the variation in the data. Expedu, lifex, ratio_2edu and gni features contribute to the first PC as well as matmor and adlbr, even though they point to the opposite direction than the other four featues. When features diverge and form a large angle (close to 180°), they are negatively correlated with each other which the correlations and correlation plot above also confirm: expedu, lifex, ratio_2edu and gni correlate strongly with each other and all of them correlate negatively with  matmor and adlbr, that in turn, correlate quite highly positively with each other. We can see this from the vectors that each of the features have: when the vectors are close to each other and form a small angle, the variables they represent are positively correlated. 
 
 Reppar and ratio_lab features in turn contribute to the second PC as their arrows point to to the direction of the y-axis. Reppar and ratio_lab meet the other features at 90°, which means those variables they represent are not likely to be correlated. This is also supported by the descriptive statistics at the beginning of this exercise.
 
 Compared to biplot of PCA1, the observations (countries) are more spread accross the scatter plot; in the PCA1 biplot the observations were concentrated on the top right corner of the plot. This difference is also due to the different scaling of the data. Also, in the PCA1, GNI feature is assumed to be more important than the other features because GNI has the largest variance of the original scale of the data. The features with smaller variance are all concentrated on one point in the PCA1 biplot but when the original scales are standardized all the features are assumed to have the same importance and none of them stand out in the PCA2 biplot. 
 
 
-```{r}
+```{r fig.height=7, fig.width=7}
 
 # rounded percentages of variance captured by each PC
 pca_pr_std <- round(100*pca2$importance[2,], digits = 1) 
@@ -175,7 +175,7 @@ I would interpret that the first two principal component dimensions based on the
 
 Lastly, I perform the Multiple Correspondence Analysis on the tea data (loaded from the package Factominer). Before the analysis, I explored the structure and the dimensions of the data and visualized it after selecting six columns of the data to keep for the analysis. 
 
-```{r}
+```{r warning=FALSE}
 #install.packages("FactoMineR")
 library(FactoMineR)
 
@@ -221,7 +221,7 @@ summary(mca)
 ```
 I have drawn below a variable biplot of the analysis where are variables drawn on the first two dimensions. The MCA biplot visualizes variable patterns in the data and the distances between variable categories gives a measure of their similarity. For example categories milk, Earl grey and sugar are more similar to each other than black and no sugar which in turn are similar. Also not lunch and alone are similar to each other as their distance from each other is short. Unpackaged and tea shop are different from all the other categories since they are located further away from the others. We can also see that first dimension captures 15.24 % of the variation and second dimension 14.23 % of the variation in the data. 
 
-```{r}
+```{r fig.height=7, fig.width=7}
 
 # visualize MCA
 plot(mca, invisible=c("ind"), habillage = "quali", graph.type = "classic")

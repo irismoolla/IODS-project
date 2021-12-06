@@ -5,6 +5,10 @@ This week I learned new techniques of data clustering and classification. With t
 
 data source: the Boston data from the MASS package 
 
+```{r}
+date()
+```
+
 
 ### Step 1: 
 
@@ -27,7 +31,7 @@ dim(Boston)
 
 First, we look at the summaries of the variables in the Boston data. We see that the data contains mostly numeric variables with the exception of rad which is an integer index variable and chas which is a binary variable. .  
 
-```{r}
+```{r warning=FALSE}
 # access the following packages
 library(tidyr); library(dplyr); library(ggplot2); library(GGally); library(corrplot)
 
@@ -77,7 +81,7 @@ We can see high negative correlations between the following variables:
 * medv and lstat, meaning  that the higher the median value of owner-occupied homes is, the lower the proportion of the lower status population is. 
 * lstat and rm, meaning that the higher the lower the proportion of the lower status population is, the lower the average number of rooms per dwelling is. 
 
-```{r}
+```{r fig.height=6, fig.width=6}
 
 # calculate the correlation matrix and round it
 cor_matrix<-cor(Boston) %>% round(digits = 2)
@@ -163,7 +167,7 @@ lda.fit
 
 LDA can be visualized with a biplot which is done below: 
 
-```{r}
+```{r fig.height=6, fig.width=8}
 # the function for lda biplot arrows
 lda.arrows <- function(x, myscale = 1, arrow_heads = 0.1, color = "red", tex = 0.75, choices = c(1,2)){
   heads <- coef(x)
@@ -179,7 +183,7 @@ classes <- as.numeric(train$crime)
 
 # plot the lda results
 plot(lda.fit, dimen = 2, col = classes, pch = classes)
-lda.arrows(lda.fit, myscale = 2.3)
+lda.arrows(lda.fit, myscale = 2.0)
 
 ```
 
@@ -240,7 +244,7 @@ km <-kmeans(Boston, centers = 3)
 
 K-means needs the number of clusters set in advance and the optimal number of clusters can be determined by looking at how the total of within cluster sum of squares (WCSS) behaves when the number of cluster changes. Plotting the number of clusters and the total WCSS, the optimal number of clusters is when the total WCSS drops radically.
 
-```{r}
+```{r fig.height=6, fig.width=8}
 set.seed(123)
 
 # determine the number of clusters
@@ -257,7 +261,7 @@ qplot(x = 1:k_max, y = twcss, geom = 'line')
 When investigating the optimal number of clusters, we see that there is a radical drop in the total WCSS when the number of clusters is 2. I run k-means algorithm again setting the number of clusters as 2. From the visualization of the clusters, we can see that the data clusters quite well between the two clusters, and the observation pairs seem to cluster around the two clusters (colours black and red represent the clusters) and the observations are separated from each other depending on the cluster they belong to. However, there are a few variables, such as rm and black, that do not seem to cluster that well according to the two clusters. The observation pairs between rm and black and other variables seem to overlap and there are outlier observations in both clusters (separate black and red dots). 
 
 
-```{r}
+```{r fig.height=6, fig.width=8}
 
 # k-means clustering
 km <-kmeans(Boston, centers = 2)
