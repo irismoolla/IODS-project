@@ -103,9 +103,6 @@ From the figure below, it is difficult to see the arrows and thus, interpret it 
 
 ```{r fig.height=7, fig.width=7, message=FALSE, warning=FALSE}
 
-
-biplot(pca1_human, choices = 1:2, cex = c(0.8, 1), col = c("grey40", "deeppink2"))
-
 # rounded percentages of variance captured by each PC
 pca_pr <- round(100*pca1$importance[2,], digits = 1) 
 
