@@ -1,0 +1,179 @@
+
+
+## Analysis of longitudinal data
+
+
+This week I learned new techniques to work with and analyse longitudinal data. With the data already saved into R, I performed and interpreted .. All the R codes, interpretations and explanations of the analysis exercises are found below. 
+
+data sources: [https://raw.githubusercontent.com/KimmoVehkalahti/MABS/master/Examples/data/BPRS.txt](https://raw.githubusercontent.com/KimmoVehkalahti/MABS/master/Examples/data/BPRS.txt) 
+
+[https://raw.githubusercontent.com/KimmoVehkalahti/MABS/master/Examples/data/rats.txt](https://raw.githubusercontent.com/KimmoVehkalahti/MABS/master/Examples/data/rats.txt) 
+
+
+```{r}
+date()
+```
+
+
+```{r}
+
+setwd("~/Git/IODS-project")
+RATSL <- read.table("C:/Users/irisp/Documents/Git/IODS-project/data/RATSL.csv")
+BPRSL <- read.table("C:/Users/irisp/Documents/Git/IODS-project/data/BPRSL.csv")
+  
+# access the following packages
+library(tidyr); library(dplyr); library(ggplot2)
+
+#Convert the categorical variables of both data sets to factors
+BPRSL$treatment <- factor(BPRSL$treatment)
+BPRSL$subject <- factor(BPRSL$subject)
+
+RATSL$ID <- factor(RATSL$ID)
+RATSL$Group <- factor(RATSL$Group)
+```
+
+
+Note that you must SWAP the data sets! :) It is NOT a simple copy & paste of my book!
+
+### Step 1: Implementing the analyses of Chapter 8 of MABS using the RATS data
+
+(0-7 points: 0-4 points for graphs or analysis results + 0-3 points for their interpretations)
+
+Graphical displays of data are almost always useful for exposing patterns in the data, particularly when these are unexpected; this might be of great help in suggesting which class of models might be most sensibly applied in the later more formal analysis.
+
+
+```{r}
+
+# Draw the plot
+ggplot(RATSL, aes(x = Time, y = Weight, linetype = ID)) +
+  geom_line() +
+  scale_linetype_manual(values = rep(1:10, times=4)) +
+  facet_grid(. ~ Group, labeller = label_both) +
+  theme(legend.position = "none") + 
+  scale_y_continuous(limits = c(min(RATSL$Weight), max(RATSL$Weight)))
+
+```
+
+
+An important effect we want to take notice is how the men who have higher BPRS values at the beginning tend to have higher values throughout the study. This phenomenon is generally referred to as tracking.
+
+The tracking phenomenon can be seen more clearly in a plot of the standardized values of each observation, i.e., the values obtained by subtracting the relevant occasion mean from the original observation and then dividing by the corresponding visit standard deviation.
+
+With large numbers of observations, graphical displays of individual response profiles are of little use and investigators then commonly produce graphs showing average (mean) profiles for each treatment group along with some indication of the variation of the observations at each time point, in this case the standard error of mean
+
+
+```{r}
+# Standardise the variable bprs
+RATSL <- RATSL %>%
+  group_by(Time) %>%
+  mutate(stdrats = (Weight - mean(Weight))/sd(Weight) ) %>%
+  ungroup()
+
+# Glimpse the data
+glimpse(RATSL)
+
+# Plot again with the standardised bprs
+ggplot(RATSL, aes(x = Time, y = stdrats, linetype = ID)) +
+  geom_line() +
+  scale_linetype_manual(values = rep(1:10, times=4)) +
+  facet_grid(. ~ Group, labeller = label_both) +
+  scale_y_continuous(name = "standardized rats")
+```
+
+
+
+```{r}
+# Number of IDs (per group):
+table (RATSL$Group, RATSL$ID)
+
+n <- 16
+
+# Summary data with mean and standard error of bprs by treatment and week 
+RATSS <- RATSL %>%
+  group_by(Group, Time) %>%
+  summarise( mean = mean(Weight), se = sd(Weight)/sqrt(n) ) %>%
+  ungroup()
+
+# Glimpse the data
+glimpse(RATSS)
+```
+
+
+```{r}
+# Plot the mean profiles
+ggplot(RATSS, aes(x = Time, y = mean, linetype = Group, shape = Group)) +
+  geom_line() +
+  scale_linetype_manual(values = c(1,2,3)) +
+  geom_point(size=3) +
+  scale_shape_manual(values = c(1,2,3)) +
+  geom_errorbar(aes(ymin = mean - se, ymax = mean + se, linetype="1"), width=0.3) +
+  theme(legend.position = c(0.8,0.8)) +
+  scale_y_continuous(name = "mean(rats) +/- se(rats)")
+```
+
+
+As an example of the summary measure approach we will look into the post treatment values of the BPRS. The mean of weeks 1 to 8 will be our summary measure. First calculate this measure and then look at boxplots of the measure for each treatment group. See how the mean summary measure is more variable in the second treatment group and its distribution in this group is somewhat skew. The boxplot of the second group also reveals an outlier, a subject whose mean BPRS score of the eight weeks is over 70. It might bias the conclusions from further comparisons of the groups, so we shall remove that subject from the data. Without the outlier, try to figure which treatment group might have the lower the eight-week mean. Think, considering the variation, how can we be sure?
+ 
+```{r}
+# Create a summary data by group and ID with mean as the summary variable
+RATSL64S <- RATSL %>%
+  filter(Time > 0) %>%
+  group_by(Group, ID) %>%
+  summarise( mean=mean(Weight) ) %>%
+  ungroup()
+
+# Glimpse the data
+glimpse(RATSL64S)
+
+# Draw a boxplot of the mean versus treatment
+ggplot(RATSL64S, aes(x = Group, y = mean)) +
+  geom_boxplot() +
+  stat_summary(fun.y = "mean", geom = "point", shape=23, size=4, fill = "white") +
+  scale_y_continuous(name = "mean(Weight), time 1-64")
+
+# Create a new data by filtering the outlier and adjust the ggplot code the draw the plot again with the new data
+RATSL64S1 <- RATSL64S %>%
+  filter(mean < 560)
+
+ggplot(RATSL64S1, aes(x = Group, y = mean)) +
+  geom_boxplot() +
+  stat_summary(fun.y = "mean", geom = "point", shape=23, size=4, fill = "white") +
+  scale_y_continuous(name = "mean(Weight), time 1-64")
+```
+ 
+ 
+Although the informal graphical material presented up to now has all indicated a lack of difference in the two treatment groups, most investigators would still require a formal test for a difference. Consequently we shall now apply a t-test to assess any difference between the treatment groups, and also calculate a confidence interval for this difference. We use the data without the outlier created in the previous exercise. The t-test confirms the lack of any evidence for a group difference. Also the 95% confidence interval is wide and includes the zero, allowing for similar conclusions to be made.
+
+Baseline measurements of the outcome variable in a longitudinal study are often correlated with the chosen summary measure  and using such measures in the analysis can often lead to substantial gains in precision when used appropriately as  a covariate in an analysis of covariance. We can illustrate the analysis on the data using the BPRS value corresponding 
+to time zero taken prior to the start of treatment as the baseline covariate. We see that the baseline BPRS is strongly related to the BPRS values taken after treatment has begun, but there is still no evidence of a treatment difference even after conditioning on the baseline value.
+
+Compute the analysis of variance table for the fitted model and pay close attention to the significance of baseline
+
+
+```{r}
+
+# Perform a two-sample t-test
+#t.test(mean ~ Group, data = RATSL64S1, var.equal = TRUE)
+
+# Add the baseline from the original data as a new variable to the summary data
+#RATSL64S2 <- RATSL64S %>%
+#  mutate(baseline = RATS$WD1)
+
+# Fit the linear model with the mean as the response 
+#fit <- lm(mean ~ baseline + Group, data = RATSL64S2)
+
+# Compute the analysis of variance table for the fitted model with anova()
+#anova(fit)
+
+```
+ 
+### Step 2: Implementing the analyses of Chapter 9 of MABS using the BPRS data
+
+(0-8 points: 0-4 points for graphs or analysis results + 0-4 points for their interpretations)
+
+
+```{r}
+
+```
+
+

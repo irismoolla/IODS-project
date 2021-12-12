@@ -80,6 +80,7 @@ dim(human)
 # saving the joined dataset
 write.table(human, file = "C:/Users/irisp/Documents/Git/IODS-project/data/human.csv")
 
+#data wrangling for exercise 5 IODS-course 
 #4.12.2021
 
 #reading the saved data             
