@@ -3,9 +3,9 @@
 ## Analysis of longitudinal data
 
 
-This week I learned new techniques to work with and analyse longitudinal data. With the data already saved into R, I performed and interpreted .. All the R codes, interpretations and explanations of the analysis exercises are found below. 
+This week I learned new techniques to work with and analyse longitudinal data. With the data sets RATS and BPRSL already saved into R, I performed and interpreted t-tests, Analysis of Variance, regression and multilevel analysis. All the R codes, interpretations and explanations of the analysis exercises are found below. 
 
-data sources: [https://raw.githubusercontent.com/KimmoVehkalahti/MABS/master/Examples/data/BPRS.txt](https://raw.githubusercontent.com/KimmoVehkalahti/MABS/master/Examples/data/BPRS.txt) 
+data sources: [https://raw.githubusercontent.com/KimmoVehkalahti/MABS/master/Examples/data/BPRS.txt](https://raw.githubusercontent.com/KimmoVehkalahti/MABS/master/Examples/data/BPRS.txt)
 
 [https://raw.githubusercontent.com/KimmoVehkalahti/MABS/master/Examples/data/rats.txt](https://raw.githubusercontent.com/KimmoVehkalahti/MABS/master/Examples/data/rats.txt) 
 
@@ -15,11 +15,14 @@ date()
 ```
 
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 
 setwd("~/Git/IODS-project")
 RATSL <- read.table("C:/Users/irisp/Documents/Git/IODS-project/data/RATSL.csv")
 BPRSL <- read.table("C:/Users/irisp/Documents/Git/IODS-project/data/BPRSL.csv")
+BPRS <- read.table("https://raw.githubusercontent.com/KimmoVehkalahti/MABS/master/Examples/data/BPRS.txt", sep  =" ", header = T)
+RATS <- read.table("https://raw.githubusercontent.com/KimmoVehkalahti/MABS/master/Examples/data/rats.txt", header = TRUE, sep = '\t')
+
   
 # access the following packages
 library(tidyr); library(dplyr); library(ggplot2)
@@ -33,16 +36,15 @@ RATSL$Group <- factor(RATSL$Group)
 ```
 
 
-Note that you must SWAP the data sets! :) It is NOT a simple copy & paste of my book!
-
 ### Step 1: Implementing the analyses of Chapter 8 of MABS using the RATS data
 
-(0-7 points: 0-4 points for graphs or analysis results + 0-3 points for their interpretations)
+
+For the t-tests and Analysis of Variance, I use data from a nutrition study conducted in three groups of rats. The groups were put on different diets, and each animal’s body weight (grams) was recorded repeatedly (approximately) weekly, except in week seven when two recordings were taken) over a 9-week period. We are interested in whether the growth profiles of the three groups differ.
 
 Graphical displays of data are almost always useful for exposing patterns in the data, particularly when these are unexpected; this might be of great help in suggesting which class of models might be most sensibly applied in the later more formal analysis.
 
 
-```{r}
+```{r fig.height=7, fig.width=7}
 
 # Draw the plot
 ggplot(RATSL, aes(x = Time, y = Weight, linetype = ID)) +
@@ -55,14 +57,12 @@ ggplot(RATSL, aes(x = Time, y = Weight, linetype = ID)) +
 ```
 
 
-An important effect we want to take notice is how the men who have higher BPRS values at the beginning tend to have higher values throughout the study. This phenomenon is generally referred to as tracking.
+An important effect we want to take notice is how the rats who have higher weight in grams at the beginning tend to have higher values as the study goes on. This phenomenon is generally referred to as tracking which can be seen more clearly in a plot of the standardized values of each observation (below).
 
-The tracking phenomenon can be seen more clearly in a plot of the standardized values of each observation, i.e., the values obtained by subtracting the relevant occasion mean from the original observation and then dividing by the corresponding visit standard deviation.
-
-With large numbers of observations, graphical displays of individual response profiles are of little use and investigators then commonly produce graphs showing average (mean) profiles for each treatment group along with some indication of the variation of the observations at each time point, in this case the standard error of mean
+With large numbers of observations, graphical displays of individual response profiles are of little use and investigators then commonly produce graphs showing average (mean) profiles for each treatment group along with some indication of the variation of the observations at each time point, in this case the standard error of mean.
 
 
-```{r}
+```{r fig.height=7, fig.width=7}
 # Standardise the variable bprs
 RATSL <- RATSL %>%
   group_by(Time) %>%
@@ -82,7 +82,7 @@ ggplot(RATSL, aes(x = Time, y = stdrats, linetype = ID)) +
 
 
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 # Number of IDs (per group):
 table (RATSL$Group, RATSL$ID)
 
@@ -99,7 +99,7 @@ glimpse(RATSS)
 ```
 
 
-```{r}
+```{r fig.height=7, fig.width=7}
 # Plot the mean profiles
 ggplot(RATSS, aes(x = Time, y = mean, linetype = Group, shape = Group)) +
   geom_line() +
@@ -112,9 +112,10 @@ ggplot(RATSS, aes(x = Time, y = mean, linetype = Group, shape = Group)) +
 ```
 
 
-As an example of the summary measure approach we will look into the post treatment values of the BPRS. The mean of weeks 1 to 8 will be our summary measure. First calculate this measure and then look at boxplots of the measure for each treatment group. See how the mean summary measure is more variable in the second treatment group and its distribution in this group is somewhat skew. The boxplot of the second group also reveals an outlier, a subject whose mean BPRS score of the eight weeks is over 70. It might bias the conclusions from further comparisons of the groups, so we shall remove that subject from the data. Without the outlier, try to figure which treatment group might have the lower the eight-week mean. Think, considering the variation, how can we be sure?
+As an example of the summary measure approach we will look into the post treatment values of the RATS. The mean of time from 1 to 64 will be our summary measure. First I calculated this measure and then looked at boxplots of the measure for each treatment group. The mean summary measure is more variable in the second treatment group and its distribution in this group is somewhat skew. The boxplot of the second group also reveals an outlier, a subject whose mean weight score is over 550. It might bias the conclusions from further comparisons of the groups, so I removed that observation from the data. With and without the outlier, the second group has the lowest weight mean during the observation period. The means of the groups also seem to differ from each other with and without the outliers because the boxes do not overlap with each other.
+
  
-```{r}
+```{r fig.height=7, fig.width=7}
 # Create a summary data by group and ID with mean as the summary variable
 RATSL64S <- RATSL %>%
   filter(Time > 0) %>%
@@ -142,38 +143,163 @@ ggplot(RATSL64S1, aes(x = Group, y = mean)) +
 ```
  
  
-Although the informal graphical material presented up to now has all indicated a lack of difference in the two treatment groups, most investigators would still require a formal test for a difference. Consequently we shall now apply a t-test to assess any difference between the treatment groups, and also calculate a confidence interval for this difference. We use the data without the outlier created in the previous exercise. The t-test confirms the lack of any evidence for a group difference. Also the 95% confidence interval is wide and includes the zero, allowing for similar conclusions to be made.
-
-Baseline measurements of the outcome variable in a longitudinal study are often correlated with the chosen summary measure  and using such measures in the analysis can often lead to substantial gains in precision when used appropriately as  a covariate in an analysis of covariance. We can illustrate the analysis on the data using the BPRS value corresponding 
-to time zero taken prior to the start of treatment as the baseline covariate. We see that the baseline BPRS is strongly related to the BPRS values taken after treatment has begun, but there is still no evidence of a treatment difference even after conditioning on the baseline value.
-
-Compute the analysis of variance table for the fitted model and pay close attention to the significance of baseline
+Although the informal graphical material presented up to now has all indicated differences in the three groups, we can still perform a formal test for a difference. Consequently I apply a t-test to assess any difference between the groups, and also calculate a confidence interval for this difference. I use the data without the outlier created in the previous exercise. The t-test confirms the evidence for group differences. Also the 95% confidence intervals between groups 1 and 2, and 1 and 3 are quite narrow and do not include zero. The the 95% confidence intervals between groups 2 and 3 are wider but they also do not include zero so we can conclude the group differences are statistically relevant.
 
 
 ```{r}
 
-# Perform a two-sample t-test
-#t.test(mean ~ Group, data = RATSL64S1, var.equal = TRUE)
+# Perform t-test on groups 1 & 2
+t.test(mean[1:11] ~ Group[1:11], data = RATSL64S1, var.equal = TRUE)
 
-# Add the baseline from the original data as a new variable to the summary data
-#RATSL64S2 <- RATSL64S %>%
-#  mutate(baseline = RATS$WD1)
+# Perform t-test on groups 1 & 3
+t.test(mean[c(1:8,12:15)] ~ Group[c(1:8,12:15)], data = RATSL64S1, var.equal = TRUE)
 
-# Fit the linear model with the mean as the response 
-#fit <- lm(mean ~ baseline + Group, data = RATSL64S2)
-
-# Compute the analysis of variance table for the fitted model with anova()
-#anova(fit)
+# Perform t-test on groups 2 & 3
+t.test(mean[9:15] ~ Group[9:15], data = RATSL64S1, var.equal = TRUE)
 
 ```
  
-### Step 2: Implementing the analyses of Chapter 9 of MABS using the BPRS data
-
-(0-8 points: 0-4 points for graphs or analysis results + 0-4 points for their interpretations)
+ 
+Baseline measurements of the outcome variable in a longitudinal study are often correlated with the chosen summary measure  and using such measures in the analysis can often lead to substantial gains in precision when used appropriately as  a covariate in an analysis of covariance. We can illustrate the analysis on the data using the RATS value corresponding 
+to time zero taken prior to the start of treatment as the baseline covariate. We see that the baseline RATS is strongly related to the RATS values taken after observation period has begun, and there is still little evidence of a group difference even after conditioning on the baseline value. Baseline is significant with p<0.000 and Group with p<0.1.
 
 
 ```{r}
+# Add the baseline from the original data as a new variable to the summary data
+RATSL64S2 <- RATSL64S %>%
+  mutate(baseline = RATS$WD1)
+
+# Fit the linear model with the mean as the response 
+fit <- lm(mean ~ baseline + Group, data = RATSL64S2)
+
+# Compute the analysis of variance table for the fitted model with anova()
+anova(fit)
 
 ```
 
+ 
+### Step 2: Implementing the analyses of Chapter 9 of MABS using the BPRS data
+
+
+Longitudinal data, where a response variable is measured on each subject on several different occasions poses problems for their analysis because the repeated measurements on each subject are very likely to be correlated rather than independent. 
+
+To investigate the use of linear mixed effects models in practice, I use the BPRS data, in which 40 male subjects were randomly assigned to one oftwo treatment groups and each subject was rated on the brief psychiatric rating scale (BPRS) measured before treatment began (week 0) and then at weekly intervals for eight weeks. The BPRS assesses the level of 18 symptom constructs such  as hostility, suspiciousness, hallucinations and grandiosity; each of these is rated from one (not present) to seven (extremely severe). The scale is used to evaluate patients suspected of having schizophrenia.
+
+To begin, we shall ignore the repeated-measures structure of the data and assume that all the observations are independent of one another. Now if we simply ignore that the sets of bprs values come from the same male, we have a data set consisting of 360 bprs values, weeks, and group memberships that can be analyzed using multiple linear regression. To begin, I will plot the data, identifying the observations in each group but ignoring the longitudinal nature of the data. 
+
+The bprs values in treatment group 2 seem to be more varied than in group in 1 and there are more higher bprs values in treatment group 2 than group 1. It seems that in general, the bprs values derease over the 8-week period in both groups, but there are a few individuals whose bprs values increase during that period. 
+
+
+```{r fig.height=7, fig.width=7}
+# Check the dimensions of the data
+dim(BPRSL)
+
+# Plot the BPRSL data
+ggplot(BPRSL, aes(x = week, y = bprs, linetype = subject)) +
+  geom_line() +
+  scale_linetype_manual(values = rep(1:10, times=4)) +
+  facet_grid(. ~ treatment, labeller = label_both) +
+  theme(legend.position = "none") + 
+  scale_y_continuous(limits = c(min(BPRSL$bprs), max(BPRSL$bprs)))
+```
+
+
+Observe 1) How treatment group 2 differ from group 1 conditional on weeks and 2) The significance of the regression on week. The linear regression shows that there is a significant relationship between bprs values and the treatment week (p<0.000) but there is no evidence that the two treatment groups have a significant effect on the bprs values: there is no evidence of statistical significance.
+
+
+```{r}
+# create a regression model RATS_reg
+BPRSL_reg <- lm(bprs ~ week + treatment, data = BPRSL)
+
+# print out a summary of the model
+summary(BPRSL_reg)
+```
+
+
+The previous model assumes independence of the repeated measures of bprs values, and this assumption is highly unlikely. So, now we will move on to consider both some more appropriate graphics and appropriate models.
+
+To begin the more formal analysis of the bprs values data, I will first fit a random intercept model for the same two explanatory variables: week and treatment. Fitting a random intercept model allows the linear regression fit for each man to differ in intercept from other men.
+
+The standard deviations (times 2) of the subject variable is smaller than the variance estimate which means the bprs values vary across th two treatment groups and using a multilevel model such as a random intercept model is recommended. 
+
+
+```{r}
+# access library lme4
+library(lme4)
+
+# Create a random intercept model
+BPRSL_ref <- lmer(bprs ~ week + treatment + (1 | subject), data = BPRSL, REML = FALSE)
+
+# Print the summary of the model
+summary(BPRSL_ref)
+```
+
+
+Now we can move on to fit a random intercept and random slope model to the BPRS data. Fitting a random intercept and random slope model allows the linear regression fits for each individual to differ in intercept but also in slope. This way it is possible to account for the individual differences in the men's bprs profiles, but also the effect of time.
+
+Pay attention to the chi-squared statistics and p-value of the likelihood ratio test between BPRSL_ref1 and BPRSL_ref. The lower the value the better the fit against the comparison model. The AIC, logLik and deviance values are slightly lower and BIC value slighly higher for the BPRSL_ref1 model compared to BPRSL_ref model which indicate BPRSL_ref1 being a better fit to the data. The p-value of the likelihood ratio test is also significant (p<0.05) which means the BPRSL_ref1 is confirmed to be a better fit to the data. 
+
+
+```{r}
+# create a random intercept and random slope model
+BPRSL_ref1 <- lmer(bprs ~ week + treatment + (week | subject), data = BPRSL, REML = FALSE)
+
+# print a summary of the model
+summary(BPRSL_ref1)
+
+# perform an ANOVA test on the two models
+anova(BPRSL_ref1, BPRSL_ref)
+```
+
+
+Finally, we fit a random intercept and slope model that allows for a treatment group and week interaction.
+
+Again pay attention to the likelihood ratio test chi-squared value and the according p-value. The lower the value the better the fit against the comparison model.
+
+
+```{r}
+# create a random intercept and random slope model
+BPRSL_ref2 <- lmer(bprs ~ week * treatment + (week | subject), data = BPRSL, REML = FALSE)
+
+# print a summary of the model
+summary(BPRSL_ref2)
+
+# perform an ANOVA test on the two models
+anova(BPRSL_ref2, BPRSL_ref1)
+```
+
+
+Draw the plot of observed values of RATSL (this is the same plot drawn earlier)
+
+
+```{r fig.height=7, fig.width=7}
+# draw the plot of BPRSL
+ggplot(BPRSL, aes(x = week, y = bprs, linetype = subject)) +
+  geom_line(aes(linetype = subject)) +
+  scale_linetype_manual(values = rep(1:10, times=4)) +
+  facet_grid(. ~ treatment, labeller = label_both) +
+  theme(legend.position = "top") + 
+  scale_y_continuous(limits = c(min(BPRSL$bprs), max(BPRSL$bprs)))
+```
+
+
+Here I create a vector of the fitted values of the model and draw the plot of fitted values of BPRSL.
+
+
+```{r fig.height=7, fig.width=7}
+# Create a vector of the fitted values
+Fitted <- fitted(BPRSL_ref2)
+
+# Create a new column fitted to RATSL
+BPRSL <- BPRSL %>%
+  mutate(Fitted)
+
+# draw the plot of BPRSL
+ggplot(BPRSL, aes(x = week, y = Fitted, linetype = subject)) +
+  geom_line(aes(linetype = subject)) +
+  scale_linetype_manual(values = rep(1:10, times=4)) +
+  facet_grid(. ~ treatment, labeller = label_both) +
+  theme(legend.position = "top") + 
+  scale_y_continuous(limits = c(min(BPRSL$bprs), max(BPRSL$bprs)))
+```
 
